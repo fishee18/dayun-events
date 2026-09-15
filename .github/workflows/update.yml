@@ -24,6 +24,7 @@ permissions:
 
 concurrency:
   group: dayun-update
+  # 两个运行并发时，后一个等前一个推完再推（见「提交数据变化」里的 fetch/reset）
   cancel-in-progress: false
 
 jobs:
@@ -52,12 +53,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # 抓取要跑几分钟，这期间远端可能已被别的运行推进（手动触发 + 定时很容易撞上）。
+          # 先把基底移到远端最新，再把本次产物重新暂存，避免 push 被非快进拒绝。
+          # 用 --soft 保留工作区，且只暂存数据文件，不会覆盖别人对代码文件的改动。
+          git fetch origin
+          git reset --soft origin/main
           git add data site/events.json
-          if git diff --staged --quiet; then
+          if git diff --cached --quiet; then
             echo "数据无变化，跳过提交"
           else
             git commit -m "chore: 更新演出数据 $(date -u '+%Y-%m-%d %H:%M')"
-            git push
+            git push origin HEAD:main
           fi
 
       - uses: actions/configure-pages@v5
