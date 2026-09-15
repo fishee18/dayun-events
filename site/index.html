@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>深圳大运中心演出日历</title>
+<meta name="description" content="深圳大运中心体育场、体育馆的演出信息汇总，来源为广东省文旅厅审批公告及公开渠道。">
+<style>
+  :root{
+    --bg:#f6f6f4; --surface:#fff; --surface-2:#fbfbf9;
+    --text:#1b1b19; --muted:#6d6d66; --faint:#9a9a92;
+    --line:#e7e5df; --line-soft:#f0eee9;
+    --stadium:#185fa5; --stadium-bg:#e8f1fb;
+    --gym:#0f6e56;     --gym-bg:#e2f3ed;
+    --new:#a32d2d;     --new-bg:#fbeaea;
+    --live:#854f0b;    --live-bg:#faeeda;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font:400 15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 16px 64px}
+
+  header{padding:32px 0 20px}
+  h1{margin:0 0 8px;font-size:24px;font-weight:500;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:13px;color:var(--faint)}
+  .meta b{font-weight:500;color:var(--muted)}
+
+  .panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:20px;
+  }
+  .panel-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px}
+  .seg button{
+    appearance:none;border:0;background:transparent;color:var(--muted);
+    font:inherit;font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer;
+  }
+  .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .seg button:hover:not(.on){color:var(--text)}
+  input[type=search]{
+    flex:1 1 200px;min-width:160px;font:inherit;font-size:14px;
+    padding:8px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--surface-2);color:var(--text);outline:none;
+  }
+  input[type=search]:focus{border-color:#c9c7c0;background:var(--surface)}
+  .count{font-size:13px;color:var(--faint);margin-left:auto;white-space:nowrap}
+
+  h2.month{
+    font-size:13px;font-weight:500;color:var(--muted);
+    margin:28px 0 10px;display:flex;align-items:center;gap:10px;
+  }
+  h2.month::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;margin-bottom:10px;transition:border-color .15s;
+  }
+  .card:hover{border-color:#d8d6cf}
+  .card-top{display:flex;gap:12px;align-items:flex-start}
+  .date-box{
+    flex:0 0 58px;text-align:center;border-radius:9px;
+    background:var(--surface-2);border:1px solid var(--line);padding:7px 4px;
+  }
+  .date-box .d{font-size:19px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
+  .date-box .m{font-size:11px;color:var(--faint);margin-top:2px}
+  .card-main{flex:1;min-width:0}
+  .name{font-size:15px;font-weight:500;line-height:1.45;margin:0 0 8px;word-break:break-word}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .tag{
+    font-size:11.5px;padding:2.5px 8px;border-radius:5px;white-space:nowrap;
+    border:1px solid transparent;
+  }
+  .tag.venue-stadium{background:var(--stadium-bg);color:var(--stadium);border-color:#cfe2f6}
+  .tag.venue-gym{background:var(--gym-bg);color:var(--gym);border-color:#c6e6da}
+  .tag.venue-unknown{background:#f1efea;color:var(--muted);border-color:var(--line)}
+  .tag.is-new{background:var(--new-bg);color:var(--new);border-color:#f4d0d0}
+  .tag.is-live{background:var(--live-bg);color:var(--live);border-color:#f2dfb8}
+  .tag.src{background:var(--surface-2);color:var(--faint);border-color:var(--line)}
+
+  .facts{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;color:var(--muted)}
+  .facts span{white-space:nowrap}
+  .facts b{font-weight:400;color:var(--faint);margin-right:4px}
+  .card-foot{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);font-size:13px;
+  }
+  .card-foot a{color:var(--stadium);text-decoration:none}
+  .card-foot a:hover{text-decoration:underline}
+  .dim{color:var(--faint);font-size:12.5px}
+
+  .state{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:48px 20px;text-align:center;color:var(--faint);font-size:14px;
+  }
+  .state strong{display:block;color:var(--muted);font-weight:500;margin-bottom:6px;font-size:15px}
+
+  footer{
+    margin-top:36px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--faint);line-height:1.8;
+  }
+  footer code{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px}
+  @media(max-width:560px){
+    h1{font-size:21px}
+    .date-box{flex-basis:50px}
+    .count{margin-left:0;width:100%}
+    header{padding:24px 0 16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>深圳大运中心演出日历</h1>
+    <p class="sub">汇总体育场与体育馆的演出档期。数据来自广东省文旅厅营业性演出审批公告及公开渠道，开票信息以票务平台为准。</p>
+    <div class="meta">
+      <span>数据更新：<b id="updated">—</b></span>
+      <span>收录：<b id="total">—</b> 场</span>
+      <span id="newline" hidden>新增：<b id="newcount">0</b> 场</span>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-row">
+      <div class="seg" id="venueSeg">
+        <button data-v="all" class="on">全部</button>
+        <button data-v="stadium">体育场</button>
+        <button data-v="gym">体育馆</button>
+      </div>
+      <input type="search" id="q" placeholder="搜索演出、艺人或场馆">
+      <span class="count" id="shown"></span>
+    </div>
+  </div>
+
+  <div id="list"></div>
+  <div id="state" class="state"><strong>正在读取数据</strong>首次加载需要几秒</div>
+
+  <footer>
+    <div>场馆：深圳大运中心体育场（龙岗区龙翔大道）· 深圳大运中心体育馆</div>
+    <div>数据每周自动更新。发现遗漏可直接在仓库的 <code>data/manual.json</code> 里补录一条。</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var DATA = null, venueFilter = '', query = '';
+
+  var VENUE_LABEL = {
+    '深圳大运中心体育场': ['venue-stadium', '体育场'],
+    '深圳大运中心体育馆': ['venue-gym', '体育馆']
+  };
+
+  function venueTag(v){
+    var hit = VENUE_LABEL[v];
+    if (v && v.indexOf('大运中心') === 0 && !hit) hit = ['venue-unknown','大运中心'];
+    if (!hit) hit = ['venue-unknown', v || '场馆待定'];
+    return '<span class="tag ' + hit[0] + '">' + esc(hit[1]) + '</span>';
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function today(){
+    var d = new Date(); d.setHours(0,0,0,0); return d;
+  }
+  function parseD(s){
+    if (!s) return null;
+    var p = s.split('-'); if (p.length !== 3) return null;
+    var d = new Date(+p[0], +p[1]-1, +p[2]); d.setHours(0,0,0,0); return d;
+  }
+  function fmtDate(s){
+    var d = parseD(s); if (!d) return s || '';
+    return (d.getMonth()+1) + '月' + d.getDate() + '日';
+  }
+  function weekday(s){
+    var d = parseD(s); if (!d) return '';
+    return '周' + '日一二三四五六'[d.getDay()];
+  }
+  function monthKey(s){ return (s || '').slice(0,7); }
+  function monthLabel(k){
+    var p = k.split('-');
+    return p.length === 2 ? (+p[0]) + ' 年 ' + (+p[1]) + ' 月' : '日期待定';
+  }
+  function daysUntil(s){
+    var d = parseD(s); if (!d) return null;
+    return Math.round((d - today()) / 86400000);
+  }
+  function statusTag(e){
+    var ds = e.dates || [];
+    var start = parseD(ds[0]), end = parseD(ds[ds.length-1] || ds[0]);
+    if (!start) return '';
+    var t = today();
+    if (end && end < t) return '';
+    if (start <= t && end && end >= t)
+      return '<span class="tag is-live">进行中</span>';
+    var n = daysUntil(ds[0]);
+    if (n === 0) return '<span class="tag is-live">今天开演</span>';
+    if (n > 0 && n <= 7) return '<span class="tag is-live">' + n + ' 天后开演</span>';
+    return '';
+  }
+  function dateSummary(e){
+    var ds = e.dates || [];
+    if (!ds.length) return '日期待定';
+    if (ds.length === 1) return fmtDate(ds[0]) + ' ' + weekday(ds[0]);
+    var first = ds[0], last = ds[ds.length-1];
+    if (monthKey(first) === monthKey(last))
+      return fmtDate(first) + ' – ' + fmtDate(last) + '　共 ' + ds.length + ' 场';
+    return fmtDate(first) + ' – ' + fmtDate(last) + '　共 ' + ds.length + ' 场';
+  }
+  function match(e){
+    if (venueFilter === 'stadium' && e.venue !== '深圳大运中心体育场') return false;
+    if (venueFilter === 'gym' && e.venue !== '深圳大运中心体育馆') return false;
+    if (!query) return true;
+    var hay = [e.name, e.venue, e.venue_raw, e.organiser, e.price, (e.dates||[]).join(' ')]
+      .join(' ').toLowerCase();
+    return hay.indexOf(query.toLowerCase()) !== -1;
+  }
+  function card(e){
+    var ds = e.dates || [];
+    var d0 = ds[0] || '';
+    var dd = parseD(d0);
+    var dateBox = dd
+      ? '<div class="date-box"><div class="d">' + (dd.getMonth()+1) + '.' + dd.getDate() + '</div><div class="m">' + weekday(d0) + '</div></div>'
+      : '<div class="date-box"><div class="d" style="font-size:13px;color:#9a9a92">待定</div></div>';
+
+    var tags = venueTag(e.venue);
+    if (e.is_new) tags += '<span class="tag is-new">新</span>';
+    tags += statusTag(e);
+    var src = (e.sources && e.sources[0]) ? e.sources[0].name : (e.source || '');
+    if (src) tags += '<span class="tag src">' + esc(src) + '</span>';
+    (e.sources || []).slice(1).forEach(function(s){
+      tags += '<span class="tag src">' + esc(s.name) + '</span>';
+    });
+
+    var facts = '';
+    if (ds.length) facts += '<span><b>档期</b>' + esc(dateSummary(e)) + '</span>';
+    if (e.price) facts += '<span><b>票价</b>' + esc(e.price) + '</span>';
+    if (e.on_sale) facts += '<span><b>开票</b>' + esc(e.on_sale) + '</span>';
+    if (e.organiser) facts += '<span><b>举办</b>' + esc(e.organiser) + '</span>';
+
+    var foot = '';
+    if (e.source_url) foot += '<a href="' + esc(e.source_url) + '" target="_blank" rel="noopener">查看公告原文 →</a>';
+    if (e.venue_raw && e.venue_raw !== e.venue) foot += '<span class="dim">场所原文：' + esc(e.venue_raw) + '</span>';
+
+    return '<div class="card"><div class="card-top">' + dateBox +
+      '<div class="card-main"><div class="name">' + esc(e.name) + '</div>' +
+      '<div class="tags">' + tags + '</div>' +
+      '<div class="facts">' + facts + '</div>' +
+      (foot ? '<div class="card-foot">' + foot + '</div>' : '') +
+      '</div></div></div>';
+  }
+
+  function render(){
+    var list = document.getElementById('list');
+    var state = document.getElementById('state');
+    if (!DATA) return;
+    var all = (DATA.events || []).slice();
+    var rows = all.filter(match)
+      .sort(function(a,b){ return (a.start_date||'9999').localeCompare(b.start_date||'9999'); });
+
+    document.getElementById('shown').textContent =
+      rows.length === all.length ? '共 ' + all.length + ' 场' : rows.length + ' / ' + all.length + ' 场';
+
+    if (!rows.length){
+      list.innerHTML = '';
+      state.hidden = false;
+      state.innerHTML = all.length
+        ? '<strong>没有匹配的演出</strong>试试换个关键词或筛选条件'
+        : '<strong>暂无收录的演出</strong>数据更新后会自动出现';
+      return;
+    }
+    state.hidden = true;
+
+    var html = '', curMonth = '';
+    rows.forEach(function(e){
+      var k = monthKey(e.start_date) || 'unknown';
+      if (k !== curMonth){ curMonth = k; html += '<h2 class="month">' + esc(monthLabel(k)) + '</h2>'; }
+      html += card(e);
+    });
+    list.innerHTML = html;
+  }
+
+  document.getElementById('venueSeg').addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    Array.prototype.forEach.call(this.querySelectorAll('button'), function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    venueFilter = b.dataset.v; render();
+  });
+  var timer = null;
+  document.getElementById('q').addEventListener('input', function(){
+    var v = this.value.trim();
+    clearTimeout(timer);
+    timer = setTimeout(function(){ query = v; render(); }, 120);
+  });
+
+  function boot(data){
+    DATA = data || { events: [] };
+    document.getElementById('updated').textContent = DATA.updated_date || '—';
+    document.getElementById('total').textContent = DATA.count != null ? DATA.count : (DATA.events||[]).length;
+    if (DATA.new_count){ document.getElementById('newline').hidden = false;
+      document.getElementById('newcount').textContent = DATA.new_count; }
+    render();
+  }
+
+  // 单文件版（大运中心演出日历.html）会把数据内联成 window.__DATA__，
+  // 这样双击打开也能用；部署到服务器时才走 fetch。
+  if (window.__DATA__) { boot(window.__DATA__); return; }
+
+  fetch('./events.json?t=' + Date.now())
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(boot)
+    .catch(function(err){
+      var s = document.getElementById('state');
+      s.innerHTML = '<strong>没能读取到数据文件</strong>' +
+        '请确认 events.json 和本页面在同一个目录下。（' + esc(err.message) + '）';
+    });
+})();
+</script>
+</body>
+</html>

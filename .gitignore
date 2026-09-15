@@ -1,0 +1,13 @@
+# 构建产物：每次运行都会重新生成，不需要入库
+大运中心演出日历.html
+build_log.txt
+
+# Python
+__pycache__/
+*.py[cod]
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

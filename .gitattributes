@@ -1,0 +1,14 @@
+# 统一换行符：仓库内一律 LF。
+# Windows 上的 autocrlf 会把 .yml 工作流写成 CRLF，在 Linux runner 上
+# 会导致 `run: |` 脚本报 "bad interpreter ... ^M"，这里强制钉死 LF。
+* text=auto eol=lf
+
+# 明确二进制类型，别让 git 去猜
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

@@ -1,0 +1,80 @@
+name: 更新大运中心演出数据
+
+on:
+  schedule:
+    # 每天 09:00（北京时间，UTC+8）自动跑一次
+    - cron: '0 1 * * *'
+  # 支持在 Actions 页面手动触发
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: '抓取审批公告的页数（首次可填 30 回补历史）'
+        required: false
+        default: '10'
+  # 手工改了补录表就立刻重建
+  push:
+    branches: [main]
+    paths:
+      - 'data/manual.json'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: dayun-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 抓取数据并生成页面数据
+        env:
+          # 以下均为可选，不配置就跳过对应的提醒通道
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: python scraper/build.py --pages ${{ github.event.inputs.pages || 10 }}
+
+      - name: 提交数据变化
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data site/events.json
+          if git diff --staged --quiet; then
+            echo "数据无变化，跳过提交"
+          else
+            git commit -m "chore: 更新演出数据 $(date -u '+%Y-%m-%d %H:%M')"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+        if: github.ref == 'refs/heads/main'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: ./site
+
+  deploy:
+    needs: update
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
