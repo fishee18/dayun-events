@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-09-15 13:39:48",
+  "updated_at": "2026-09-15 18:03:20",
   "updated_date": "2026-09-15",
   "since": "2026-09-01",
   "venue": {
     "stadium": "深圳大运中心体育场",
     "gymnasium": "深圳大运中心体育馆"
   },
-  "count": 5,
-  "new_count": 0,
+  "count": 8,
+  "new_count": 3,
   "sources": [
     "gd",
     "manual"
@@ -49,6 +49,33 @@
       "confirmed": true
     },
     {
+      "name": "G.E.M.邓紫棋I AM GLORIA（我是歌莉雅）巡回演唱会-深圳站",
+      "venue": "深圳大运中心体育场",
+      "venue_raw": "广东省深圳龙岗区龙翔大道3001号深圳大运中心体育场演出场次12（场）",
+      "dates": [
+        "2026-09-11",
+        "2026-10-04"
+      ],
+      "start_date": "2026-09-11",
+      "end_date": "2026-10-04",
+      "price": "",
+      "organiser": "深圳稻草华文文化传播有限公司",
+      "on_sale": "",
+      "source": "广东省文旅厅审批公告",
+      "source_url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908757.html",
+      "evidence": "大运中心+体育场",
+      "published": "2026年06月11日",
+      "date_text": "2026-09-11至2026-10-04",
+      "id": "028530c43e6e",
+      "sources": [
+        {
+          "name": "广东省文旅厅审批公告",
+          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908757.html"
+        }
+      ],
+      "confirmed": true
+    },
+    {
       "name": "马思唯 2026 巡回演唱会 深圳站",
       "venue": "深圳大运中心体育馆",
       "venue_raw": "深圳大运中心体育馆",
@@ -68,6 +95,32 @@
         {
           "name": "人工整理",
           "url": ""
+        }
+      ],
+      "confirmed": true
+    },
+    {
+      "name": "马思唯-乐透人生 The Lottery TOUR 巡回演唱会-深圳站",
+      "venue": "深圳大运中心体育馆",
+      "venue_raw": "广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次1（场）",
+      "dates": [
+        "2026-09-19"
+      ],
+      "start_date": "2026-09-19",
+      "end_date": "2026-09-19",
+      "price": "",
+      "organiser": "深圳稻草华文兴宸传播有限公司",
+      "on_sale": "",
+      "source": "广东省文旅厅审批公告",
+      "source_url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html",
+      "evidence": "大运中心+体育馆",
+      "published": "2026年06月11日",
+      "date_text": "2026-09-19",
+      "id": "e26ee9f860de",
+      "sources": [
+        {
+          "name": "广东省文旅厅审批公告",
+          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html"
         }
       ],
       "confirmed": true
@@ -99,6 +152,33 @@
         {
           "name": "人工整理",
           "url": ""
+        }
+      ],
+      "confirmed": true
+    },
+    {
+      "name": "周华健2026“少年的奇幻之旅3.0” 巡回演唱会-深圳站",
+      "venue": "深圳大运中心体育馆",
+      "venue_raw": "广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次2（场）",
+      "dates": [
+        "2026-12-11",
+        "2026-12-12"
+      ],
+      "start_date": "2026-12-11",
+      "end_date": "2026-12-12",
+      "price": "",
+      "organiser": "深圳稻草华文兴宸传播有限公司",
+      "on_sale": "",
+      "source": "广东省文旅厅审批公告",
+      "source_url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908704.html",
+      "evidence": "大运中心+体育馆",
+      "published": "2026年06月11日",
+      "date_text": "2026-12-11至2026-12-12",
+      "id": "e87864c74f51",
+      "sources": [
+        {
+          "name": "广东省文旅厅审批公告",
+          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908704.html"
         }
       ],
       "confirmed": true
@@ -156,5 +236,33 @@
       "confirmed": true
     }
   ],
-  "recent_finished": []
+  "recent_finished": [
+    {
+      "name": "2026伍佰&China Blue ROCK STAR 2 巡回演唱会-深圳站",
+      "venue": "深圳大运中心体育馆",
+      "venue_raw": "广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次2（场）",
+      "dates": [
+        "2026-09-04",
+        "2026-09-05"
+      ],
+      "start_date": "2026-09-04",
+      "end_date": "2026-09-05",
+      "price": "",
+      "organiser": "替恩替文化（广东）有限公司",
+      "on_sale": "",
+      "source": "广东省文旅厅审批公告",
+      "source_url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4870887.html",
+      "evidence": "大运中心+体育馆",
+      "published": "2026年03月24日",
+      "date_text": "2026-09-04至2026-09-05",
+      "id": "a9e49ad495ab",
+      "sources": [
+        {
+          "name": "广东省文旅厅审批公告",
+          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4870887.html"
+        }
+      ],
+      "confirmed": true
+    }
+  ]
 }
