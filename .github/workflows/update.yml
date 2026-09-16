@@ -8,9 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       pages:
-        description: '抓取审批公告的页数（首次可填 30 回补历史）'
+        description: '抓取审批公告的页数上限（默认 40，翻够旧会自动停）'
         required: false
-        default: '10'
+        default: '40'
+      full:
+        description: '忽略水位线全量重扫（怀疑漏抓时勾上，会慢很多）'
+        required: false
+        type: boolean
+        default: false
   # 手工改了补录表就立刻重建
   push:
     branches: [main]
@@ -37,6 +42,8 @@ jobs:
         with:
           python-version: '3.12'
 
+      # 平时走增量：读仓库里的 data/state.json 水位线，只扫新发布的批文，几秒就跑完。
+      # 勾了 full 才全量重扫（怀疑漏抓时用）。
       - name: 抓取数据并生成页面数据
         env:
           # 以下均为可选，不配置就跳过对应的提醒通道
@@ -47,7 +54,10 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
-        run: python scraper/build.py --pages ${{ github.event.inputs.pages || 10 }}
+        run: |
+          FLAG=""
+          if [ "${{ github.event.inputs.full || 'false' }}" = "true" ]; then FLAG="--full"; fi
+          python scraper/build.py --pages ${{ github.event.inputs.pages || 40 }} $FLAG
 
       - name: 提交数据变化
         run: |

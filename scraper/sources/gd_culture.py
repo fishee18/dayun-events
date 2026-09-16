@@ -133,7 +133,8 @@ def _pub_date(text: str) -> str:
 
 
 def collect(cache: dict, max_pages: int = 12, verbose: bool = True,
-            max_age_days: int | None = 240) -> list[dict]:
+            max_age_days: int | None = 300, since_published: str = "",
+            stats: dict | None = None) -> list[dict]:
     """抓取公告并筛出大运中心的演出。
 
     cache 是「公告 URL -> 解析出的事件；不是大运中心则存 None」的字典，
@@ -141,6 +142,15 @@ def collect(cache: dict, max_pages: int = 12, verbose: bool = True,
 
     * 去重：已解析过的公告不再请求详情页（首轮慢，之后每天只处理新增几条）
     * 存储：历史公告解析出的演出不会因为翻过页而丢失——缓存本身就是数据库
+
+    since_published 是「上次跑到哪一天」的水位线：列表按发布时间倒序，
+    一旦某页的最新公告都早于这条线，说明后面全是抓过的旧批文，直接停。
+    留空则按 max_age_days 的线停（相当于全量回补）。
+    同一天发布的公告会被重新过一遍（已缓存的不请求详情页），避免漏掉
+    同日发布但未处理的那几条。
+
+    stats 不为空时，会把本次见到的最新公告日期写进 stats["newest_published"]，
+    供调用方更新水位线。
 
     返回缓存中所有有效事件（日期窗口过滤由调用方负责）。
     """
@@ -150,11 +160,16 @@ def collect(cache: dict, max_pages: int = 12, verbose: bool = True,
         cache["__migrated__"] = None
 
     checked = skipped_old = 0
+    newest_seen = ""
 
     cutoff = ""
     if max_age_days:
         cutoff = time.strftime("%Y-%m-%d",
                                time.localtime(time.time() - max_age_days * 86400))
+
+    # 水位线：以后每天只跑新出的批文。停的条件用「严格早于」，
+    # 这样同一天发布的公告仍会被过一遍（命中缓存的不发请求），不会漏。
+    stop_line = max(since_published or "", cutoff)
 
     for page in range(1, max_pages + 1):
         try:
@@ -166,10 +181,28 @@ def collect(cache: dict, max_pages: int = 12, verbose: bool = True,
         if not items:
             break
 
-        # 列表页只保留演出审批公告，文物/考古类直接跳过
-        items = [it for it in items if "营业性演出准予许可决定" in it["title"]]
+        # 列表页只保留演出类公告，文物/考古等栏目直接跳过。
+        # 注意别要求标题必须含「准予许可决定」——少数演出公告标题是别的写法，
+        # 卡太严会漏（实测 page 5 就有两条非标准标题的演出公告）。
+        # 误放几条进来代价极小（详情页会解析不出场馆而被丢弃），漏抓代价很大。
+        items = [it for it in items if "演出" in it["title"]]
         if verbose:
             print(f"  [gd] 第 {page} 页：{len(items)} 条演出公告")
+
+        # 列表按发布日期倒序。若整页公告都已早于停止线，后面只会更旧，
+        # 可以安全停止翻页——这样 --pages 给大一点也不浪费请求。
+        if items:
+            page_newest = max((_pub_date(it["published"]) for it in items),
+                              default="")
+            if page_newest > newest_seen:
+                newest_seen = page_newest
+            if stop_line and page_newest and page_newest < stop_line:
+                if verbose:
+                    kind = "水位线" if since_published and since_published >= cutoff \
+                        else "时间窗"
+                    print(f"  [gd] 第 {page} 页最新公告 {page_newest} 已早于{kind} "
+                          f"{stop_line}，停止翻页（后面都是抓过的旧批文）")
+                break
 
         for it in items:
             url = it["url"]
@@ -220,8 +253,17 @@ def collect(cache: dict, max_pages: int = 12, verbose: bool = True,
     # 清理：已无意义的历史条目 + 控制缓存总量
     _prune(cache, cutoff)
 
+    if stats is not None:
+        stats["newest_published"] = newest_seen
+
     if verbose:
-        print(f"  [gd] 新解析详情页 {checked} 个，跳过过旧公告 {skipped_old} 条，"
+        if since_published:
+            print(f"  [gd] 增量模式（水位线 {since_published}）："
+                  f"新解析详情页 {checked} 个，跳过过旧公告 {skipped_old} 条")
+        else:
+            print(f"  [gd] 全量模式：新解析详情页 {checked} 个，"
+                  f"跳过过旧公告 {skipped_old} 条")
+        print(f"  [gd] 本轮最新公告日期 {newest_seen or '（无）'}，"
               f"缓存内累计命中 {len(events)} 场")
     return events
 

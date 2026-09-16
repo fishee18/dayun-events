@@ -201,38 +201,73 @@ def _norm_key(name: str) -> str:
     return s.lower()
 
 
-def merge_events(events: list[dict]) -> list[dict]:
-    """跨源合并：同一场演出只在最完整的那条上保留，并记录所有来源。
+def merge_events(events: list[dict], rounds: int = 5) -> list[dict]:
+    """跨源合并，反复归并直到条数不再减少。
 
-    合并键 = 归一化名称 + 场馆 + 起始日期。名称相同但场馆未定的记录，
-    只要日期与已定馆记录重合，也会被合并进来。
+    为什么要多轮：合并是单向的。假设 A 先独立成条，后来 B 与 C 归并且日期被
+    扩充到与 A 重叠——这时 A 不会回头再并进来。跑第二轮就能收干净，
+    条数不再变化时提前退出。
     """
+    merged = _merge_once(events)
+    for _ in range(rounds - 1):
+        before = len(merged)
+        merged = _merge_once(merged)
+        if len(merged) == before:
+            break
+    return merged
+
+
+def _merge_once(events: list[dict]) -> list[dict]:
+    """单轮合并。详见 merge_events 的键说明。"""
     merged: list[dict] = []
-    index: dict[tuple[str, str], dict] = {}
+    index: dict[tuple[str, str, str], dict] = {}
+    by_slot: dict[tuple[str, str], dict] = {}
 
     def score(e: dict) -> int:
         return sum(bool(e.get(k)) for k in
                    ("dates", "price", "organiser", "on_sale", "source_url"))
 
-    for ev in events:
-        if not ev.get("name"):
-            continue
+    def reindex(ev: dict) -> None:
+        """（重新）登记一个事件的全部索引键。"""
+        key_name = _norm_key(ev["name"])
+        venue = ev.get("venue") or ""
+        index[(key_name, venue, ev.get("start_date") or "")] = ev
+        if venue and venue != UNKNOWN:
+            for d in ev.get("dates") or []:
+                by_slot[(venue, d)] = ev
+
+    def find_hit(ev: dict) -> dict | None:
         key_name = _norm_key(ev["name"])
         date = ev.get("start_date") or ""
         venue = ev.get("venue") or ""
 
-        # 先按 名称+场馆+日期 精确找
         hit = index.get((key_name, venue, date))
-        # 再按 名称+日期 兜底（场馆一个源判定了、另一个没判定）
-        if hit is None:
-            hit = next((v for k, v in index.items()
-                        if k[0] == key_name and k[2] == date), None)
+        if hit is not None:
+            return hit
+        hit = next((v for k, v in index.items()
+                    if k[0] == key_name and k[2] == date), None)
+        if hit is not None:
+            return hit
+        if venue and venue != UNKNOWN:
+            for d in (ev.get("dates") or ([date] if date else [])):
+                h = by_slot.get((venue, d))
+                if h is not None:
+                    return h
+        return None
+
+    for ev in events:
+        if not ev.get("name"):
+            continue
+        hit = find_hit(ev)
 
         if hit is None:
             ev = dict(ev)
-            ev["sources"] = [{"name": ev["source"], "url": ev.get("source_url", "")}]
+            # 多轮合并时可能已经累积了多个来源，别覆盖掉
+            if not ev.get("sources"):
+                ev["sources"] = [{"name": ev["source"],
+                                  "url": ev.get("source_url", "")}]
             merged.append(ev)
-            index[(key_name, venue, date)] = ev
+            reindex(ev)
             continue
 
         # 合并：日期取并集，空的字段互相补全，来源累加
@@ -259,6 +294,14 @@ def merge_events(events: list[dict]) -> list[dict]:
         # 场馆判定从「未知」升级为具体场馆
         if hit.get("venue") == UNKNOWN and ev.get("venue") not in (None, UNKNOWN):
             hit["venue"] = ev["venue"]
+        # 各源对同一场的叫法不同时留个别名，方便人工核对
+        alias = (ev.get("name") or "").strip()
+        if alias and alias != hit.get("name"):
+            hit.setdefault("aliases", [])
+            if alias not in hit["aliases"]:
+                hit["aliases"].append(alias)
+
+        reindex(hit)
 
     for ev in merged:
         ev["dates"] = sorted(set(ev.get("dates") or []))

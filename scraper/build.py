@@ -29,6 +29,7 @@ SITE_DIR = os.path.join(ROOT, "site")
 EVENTS_JSON = os.path.join(DATA_DIR, "events.json")
 CACHE_JSON = os.path.join(DATA_DIR, "cache.json")
 NEW_JSON = os.path.join(DATA_DIR, "new_events.json")
+STATE_JSON = os.path.join(DATA_DIR, "state.json")   # 增量抓取的水位线
 
 DEFAULT_SINCE = "2026-09-01"      # 只要 2026 年 9 月以后的演出
 DEFAULT_SOURCES = "gd,manual"     # law 源当前可用性见 gd_law_publicity.py 顶部说明
@@ -66,24 +67,41 @@ def build_standalone(payload: dict) -> str | None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="抓取深圳大运中心演出信息并生成网站数据")
-    ap.add_argument("--pages", type=int, default=10,
-                    help="抓取审批公告的页数，每页约 20 条（首次建议 30 回补历史）")
+    ap.add_argument("--pages", type=int, default=40,
+                    help="抓取审批公告的页数上限，每页约 20 条。"
+                         "公告按发布时间倒序，热门档期可能排在很后面"
+                         "（周华健那场就排在第 15 页），所以默认给到 40 页；"
+                         "实际翻到「整页公告都早于 --max-age-days」就会自动停")
     ap.add_argument("--since", default=os.environ.get("DAYUN_SINCE", DEFAULT_SINCE),
                     help=f"只保留该日期及以后的演出，默认 {DEFAULT_SINCE}")
     ap.add_argument("--rebuild", action="store_true", help="忽略 seen 缓存，全量重抓")
     ap.add_argument("--no-notify", action="store_true", help="不发送更新提醒")
     ap.add_argument("--sources", default=os.environ.get("DAYUN_SOURCES", DEFAULT_SOURCES),
                     help=f"启用的数据源，逗号分隔，默认 {DEFAULT_SOURCES}")
-    ap.add_argument("--max-age-days", type=int, default=240,
-                    help="公告发布日期超过该天数就跳过（回补时用来减少请求）")
+    ap.add_argument("--max-age-days", type=int, default=300,
+                    help="公告发布日期超过该天数就跳过（回补时用来减少请求）；"
+                         "同时也是翻页的自动停止线")
+    ap.add_argument("--since-published", default="",
+                    help="增量水位线：只扫发布日期晚于该日的新批文。"
+                         "不填就自动读 data/state.json（上次跑完记录的日期）")
+    ap.add_argument("--full", action="store_true",
+                    help="忽略水位线，全量重扫（换数据源、怀疑漏抓时用）")
     args = ap.parse_args()
 
     enabled = {s.strip() for s in args.sources.split(",") if s.strip()}
     started = time.strftime("%Y-%m-%d %H:%M:%S")
 
+    # 增量水位线：默认读上次跑完记录的「最新公告日期」，本次只扫比它新的批文
+    state = load_json(STATE_JSON, {}) if not args.rebuild else {}
+    since_published = ""
+    if not args.full:
+        since_published = (args.since_published or state.get("last_published", ""))
+
     print("=" * 62)
     print(f"深圳大运中心演出信息更新  {started}")
     print(f"保留档期：{args.since} 起 ｜ 启用源：{','.join(sorted(enabled))}")
+    print(f"批文水位线：{since_published or '（无，本次全量回补）'}"
+          f"{' ｜ --full 已指定' if args.full else ''}")
     print("=" * 62)
 
     # ---------------------------------------------------------- 1. 抓取
@@ -97,6 +115,7 @@ def main() -> int:
     if not isinstance(cache.get("gd_culture"), dict):
         cache["gd_culture"] = {}
 
+    gd_stats: dict = {}
     if "gd" in enabled:
         banner("[1/5] 广东省文旅厅 审批结果公告")
         try:
@@ -104,12 +123,24 @@ def main() -> int:
                 cache=cache["gd_culture"],
                 max_pages=args.pages,
                 max_age_days=args.max_age_days,
+                since_published=since_published,
+                stats=gd_stats,
             )
         except Exception:  # noqa: BLE001
             print("  [gd] 源异常，跳过（不影响其他源）：")
             traceback.print_exc()
     else:
         print("\n[1/5] 广东省文旅厅 —— 未启用，跳过")
+
+    # 推进水位线：只在真的看到更新公告时才前进，源站挂了不会误把线推高
+    newest_pub = gd_stats.get("newest_published", "")
+    if newest_pub > since_published:
+        state["last_published"] = newest_pub
+    state["last_run"] = started
+    state["mode"] = "full" if args.full or not since_published else "incremental"
+    save_json(STATE_JSON, state)
+    print(f"\n[+] 水位线：{state.get('last_published') or '（无）'}"
+          f"（本次模式：{state['mode']}）")
 
     if "law" in enabled:
         banner("[2/5] 广东省行政执法信息公示平台（行政许可结果）")
