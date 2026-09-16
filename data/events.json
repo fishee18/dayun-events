@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-16 18:45:09",
+  "updated_at": "2026-09-16 10:46:52",
   "updated_date": "2026-09-16",
   "since": "2026-09-01",
   "venue": {
@@ -7,7 +7,7 @@
     "gymnasium": "深圳大运中心体育馆"
   },
   "count": 7,
-  "new_count": 1,
+  "new_count": 0,
   "sources": [
     "gd",
     "manual"
