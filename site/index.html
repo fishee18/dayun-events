@@ -14,6 +14,7 @@
     --gym:#0f6e56;     --gym-bg:#e2f3ed;
     --new:#a32d2d;     --new-bg:#fbeaea;
     --live:#854f0b;    --live-bg:#faeeda;
+    --manual:#5b3fa8;  --manual-bg:#f1ecfb;
     --radius:12px;
   }
   *{box-sizing:border-box}
@@ -51,6 +52,22 @@
   input[type=search]:focus{border-color:#c9c7c0;background:var(--surface)}
   .count{font-size:13px;color:var(--faint);margin-left:auto;white-space:nowrap}
 
+  .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;
+    padding-top:12px;border-top:1px solid var(--line-soft)}
+  .btn{
+    appearance:none;font:inherit;font-size:13px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+    padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:hover{border-color:#d3d1ca;background:#fff}
+  .btn.primary{background:#1b1b19;border-color:#1b1b19;color:#fff}
+  .btn.primary:hover{background:#33332f}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.link{border-color:transparent;background:transparent;color:var(--muted);padding:7px 6px}
+  .btn.link:hover{color:var(--text);background:transparent}
+  .tools .spacer{flex:1}
+  .local-note{font-size:12.5px;color:var(--faint)}
+
   h2.month{
     font-size:13px;font-weight:500;color:var(--muted);
     margin:28px 0 10px;display:flex;align-items:center;gap:10px;
@@ -62,6 +79,7 @@
     padding:16px;margin-bottom:10px;transition:border-color .15s;
   }
   .card:hover{border-color:#d8d6cf}
+  .card.is-manual{border-left:3px solid var(--manual)}
   .card-top{display:flex;gap:12px;align-items:flex-start}
   .date-box{
     flex:0 0 58px;text-align:center;border-radius:9px;
@@ -81,6 +99,7 @@
   .tag.venue-unknown{background:#f1efea;color:var(--muted);border-color:var(--line)}
   .tag.is-new{background:var(--new-bg);color:var(--new);border-color:#f4d0d0}
   .tag.is-live{background:var(--live-bg);color:var(--live);border-color:#f2dfb8}
+  .tag.is-manual{background:var(--manual-bg);color:var(--manual);border-color:#ddd2f5}
   .tag.src{background:var(--surface-2);color:var(--faint);border-color:var(--line)}
 
   .facts{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;color:var(--muted)}
@@ -92,6 +111,7 @@
   }
   .card-foot a{color:var(--stadium);text-decoration:none}
   .card-foot a:hover{text-decoration:underline}
+  .card-foot a.del{color:var(--new)}
   .dim{color:var(--faint);font-size:12.5px}
 
   .state{
@@ -99,6 +119,42 @@
     padding:48px 20px;text-align:center;color:var(--faint);font-size:14px;
   }
   .state strong{display:block;color:var(--muted);font-weight:500;margin-bottom:6px;font-size:15px}
+
+  .mask{
+    position:fixed;inset:0;background:rgba(26,26,24,.34);z-index:60;
+    display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;
+  }
+  .mask[hidden]{display:none}
+  .modal{
+    background:var(--surface);border-radius:14px;width:100%;max-width:460px;
+    padding:20px 20px 16px;box-shadow:0 12px 40px rgba(0,0,0,.16);margin:auto 0;
+  }
+  .modal h3{margin:0 0 6px;font-size:16px;font-weight:500}
+  .modal .hint{margin:0 0 16px;font-size:12.5px;color:var(--faint);line-height:1.7}
+  .grid2{display:flex;gap:10px}
+  .grid2>*{flex:1;min-width:0}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px}
+  .field label .req{color:var(--new)}
+  .field input,.field select,.field textarea{
+    width:100%;font:inherit;font-size:14px;padding:8px 10px;
+    border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+    color:var(--text);outline:none;
+  }
+  .field textarea{resize:vertical;min-height:56px}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:#c9c7c0;background:#fff}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+  .err{color:var(--new);font-size:12.5px;margin:0 0 10px;min-height:0}
+  .err:empty{display:none}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);
+    background:#1b1b19;color:#fff;font-size:13.5px;padding:10px 16px;border-radius:10px;
+    box-shadow:0 6px 24px rgba(0,0,0,.2);opacity:0;pointer-events:none;
+    transition:opacity .18s,transform .18s;z-index:80;max-width:88vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.err{background:#7d2323}
 
   footer{
     margin-top:36px;padding-top:20px;border-top:1px solid var(--line);
@@ -110,6 +166,8 @@
     .date-box{flex-basis:50px}
     .count{margin-left:0;width:100%}
     header{padding:24px 0 16px}
+    .grid2{flex-direction:column;gap:0}
+    .tools .btn{flex:1 1 auto;justify-content:center}
   }
 </style>
 </head>
@@ -136,6 +194,14 @@
       <input type="search" id="q" placeholder="搜索演出、艺人或场馆">
       <span class="count" id="shown"></span>
     </div>
+    <div class="tools">
+      <button class="btn primary" id="syncBtn">⟳ 同步最新数据</button>
+      <button class="btn" id="addBtn">＋ 人工录入</button>
+      <span class="spacer"></span>
+      <button class="btn link" id="exportBtn">导出补录</button>
+      <button class="btn link" id="importBtn">导入</button>
+      <span class="local-note" id="localNote"></span>
+    </div>
   </div>
 
   <div id="list"></div>
@@ -143,25 +209,88 @@
 
   <footer>
     <div>场馆：深圳大运中心体育场（龙岗区龙翔大道）· 深圳大运中心体育馆</div>
-    <div>数据每周自动更新。发现遗漏可直接在仓库的 <code>data/manual.json</code> 里补录一条。</div>
+    <div>官方数据每天自动更新，点「同步最新数据」可立即拉取；临时消息可用「人工录入」先记在本机，导出后合并进 <code>data/manual.json</code> 即可全网生效。</div>
   </footer>
 </div>
 
+<div class="mask" id="mask" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">人工录入演出</h3>
+    <p class="hint">录入的内容保存在这台设备的浏览器里，只有你能看到。导出成文件后合并进仓库，就能同步给所有人。</p>
+    <p class="err" id="formErr"></p>
+    <div class="field">
+      <label for="fName">演出名称 <span class="req">*</span></label>
+      <input id="fName" type="text" placeholder="例如：周华健 少年的奇幻之旅 3.0 深圳站" autocomplete="off">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="fVenue">场馆 <span class="req">*</span></label>
+        <select id="fVenue">
+          <option value="gym">深圳大运中心体育馆</option>
+          <option value="stadium">深圳大运中心体育场</option>
+          <option value="">待定</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fDates">演出日期 <span class="req">*</span></label>
+        <input id="fDates" type="text" placeholder="2026-12-11, 2026-12-12" autocomplete="off">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="fPrice">票价</label>
+        <input id="fPrice" type="text" placeholder="380 / 580 / 780" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fOnsale">开票时间</label>
+        <input id="fOnsale" type="text" placeholder="待公布 / 已开售" autocomplete="off">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="fOrg">举办单位</label>
+        <input id="fOrg" type="text" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fUrl">链接</label>
+        <input id="fUrl" type="text" placeholder="购票或公告页面" autocomplete="off">
+      </div>
+    </div>
+    <div class="field">
+      <label for="fNote">备注</label>
+      <textarea id="fNote" placeholder="开演时间、注意事项等"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="cancelBtn">取消</button>
+      <button class="btn primary" id="saveBtn">保存</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="application/json,.json" hidden>
+<div class="toast" id="toast"></div>
+
 <script>
 (function(){
-  var DATA = null, venueFilter = '', query = '';
+  'use strict';
+
+  var LS_MANUAL = 'dayun_manual_v1';
+  var LS_REMOTE = 'dayun_remote_v1';
+  var REMOTE_URLS = [
+    'https://fishee18.github.io/dayun-events/events.json',
+    'https://raw.githubusercontent.com/fishee18/dayun-events/main/data/events.json',
+    'https://cdn.jsdelivr.net/gh/fishee18/dayun-events@main/data/events.json'
+  ];
+  var VENUE_NAME = { gym:'深圳大运中心体育馆', stadium:'深圳大运中心体育场' };
+
+  var BASE = null, DATA = null, venueFilter = '', query = '';
 
   var VENUE_LABEL = {
     '深圳大运中心体育场': ['venue-stadium', '体育场'],
     '深圳大运中心体育馆': ['venue-gym', '体育馆']
   };
 
-  function venueTag(v){
-    var hit = VENUE_LABEL[v];
-    if (v && v.indexOf('大运中心') === 0 && !hit) hit = ['venue-unknown','大运中心'];
-    if (!hit) hit = ['venue-unknown', v || '场馆待定'];
-    return '<span class="tag ' + hit[0] + '">' + esc(hit[1]) + '</span>';
-  }
+  // ------------------------------------------------------------ 工具
   function esc(s){
     return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
@@ -172,9 +301,11 @@
   }
   function parseD(s){
     if (!s) return null;
-    var p = s.split('-'); if (p.length !== 3) return null;
+    var p = String(s).split('-'); if (p.length !== 3) return null;
     var d = new Date(+p[0], +p[1]-1, +p[2]); d.setHours(0,0,0,0); return d;
   }
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function fmtISO(y,m,d){ return y + '-' + pad(m) + '-' + pad(d); }
   function fmtDate(s){
     var d = parseD(s); if (!d) return s || '';
     return (d.getMonth()+1) + '月' + d.getDate() + '日';
@@ -185,12 +316,112 @@
   }
   function monthKey(s){ return (s || '').slice(0,7); }
   function monthLabel(k){
-    var p = k.split('-');
+    var p = String(k).split('-');
     return p.length === 2 ? (+p[0]) + ' 年 ' + (+p[1]) + ' 月' : '日期待定';
   }
   function daysUntil(s){
     var d = parseD(s); if (!d) return null;
     return Math.round((d - today()) / 86400000);
+  }
+  function toast(msg, kind){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (kind === 'err' ? ' err' : '');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function(){ t.className = 'toast' + (kind === 'err' ? ' err' : ''); }, 3600);
+  }
+
+  // -------------------------------------------------- 本地存储（补录）
+  function readLS(key, fallback){
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      var v = JSON.parse(raw);
+      return v == null ? fallback : v;
+    } catch (e) { return fallback; }
+  }
+  function writeLS(key, val){
+    try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+    catch (e) { return false; }
+  }
+  function readManual(){
+    var rows = readLS(LS_MANUAL, []);
+    return Array.isArray(rows) ? rows : [];
+  }
+  function saveManual(rows){
+    if (writeLS(LS_MANUAL, rows)) return true;
+    toast('浏览器存储不可用，这次的录入没法保存', 'err');
+    return false;
+  }
+  function newKey(){
+    return 'm' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36);
+  }
+
+  // 把「2026-12-11, 12-12」这类输入解析成 YYYY-MM-DD 数组
+  function parseDateInput(text){
+    var out = [];
+    String(text || '').split(/[,，、;；\s\/]+/).forEach(function(tk){
+      tk = tk.trim(); if (!tk) return;
+      var m = tk.match(/^(\d{4})[-.年](\d{1,2})[-.月](\d{1,2})日?$/);
+      if (m){ out.push(fmtISO(+m[1], +m[2], +m[3])); return; }
+      m = tk.match(/^(\d{1,2})[-.月](\d{1,2})日?$/);
+      if (m){
+        var y = today().getFullYear();
+        var cand = new Date(y, +m[1]-1, +m[2]); cand.setHours(0,0,0,0);
+        // 已过去一个多月，说明写的是明年的日期
+        if ((today() - cand) / 86400000 > 30) y += 1;
+        out.push(fmtISO(y, +m[1], +m[2]));
+      }
+    });
+    out = out.filter(function(v,i){ return out.indexOf(v) === i; });
+    out.sort();
+    return out;
+  }
+
+  function manualToEvent(m){
+    var dates = (m.dates || []).slice().sort();
+    return {
+      id: 'manual-' + (m._key || ''),
+      name: m.name,
+      venue: VENUE_NAME[m.venue] || '',
+      venue_raw: '',
+      dates: dates,
+      start_date: dates[0] || '',
+      end_date: dates[dates.length - 1] || '',
+      price: m.price || '',
+      on_sale: m.on_sale || '',
+      organiser: m.organiser || '',
+      note: m.note || '',
+      source: '本地补录',
+      source_url: m.url || '',
+      sources: [{ name: '本地补录', url: m.url || '' }],
+      _manual: true,
+      _key: m._key
+    };
+  }
+
+  // 与官方数据撞车（同名 / 同场馆同日）时提醒，避免重复录入
+  function findDup(m){
+    var evs = (BASE && BASE.events) || [];
+    var norm = function(s){ return String(s||'').toLowerCase().replace(/[\s（）()·・\-—]/g,''); };
+    var n1 = norm(m.name), dates = m.dates || [];
+    for (var i = 0; i < evs.length; i++){
+      var e = evs[i];
+      if (norm(e.name) === n1) return e;
+      if (m.venue && e.venue === VENUE_NAME[m.venue]){
+        var hit = (e.dates || []).some(function(d){ return dates.indexOf(d) !== -1; });
+        if (hit) return e;
+      }
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------ 渲染
+  function venueTag(v){
+    var hit = VENUE_LABEL[v];
+    if (v && v.indexOf('大运中心') === 0 && !hit) hit = ['venue-unknown','大运中心'];
+    if (!hit) hit = ['venue-unknown', v || '场馆待定'];
+    return '<span class="tag ' + hit[0] + '">' + esc(hit[1]) + '</span>';
   }
   function statusTag(e){
     var ds = e.dates || [];
@@ -209,17 +440,14 @@
     var ds = e.dates || [];
     if (!ds.length) return '日期待定';
     if (ds.length === 1) return fmtDate(ds[0]) + ' ' + weekday(ds[0]);
-    var first = ds[0], last = ds[ds.length-1];
-    if (monthKey(first) === monthKey(last))
-      return fmtDate(first) + ' – ' + fmtDate(last) + '　共 ' + ds.length + ' 场';
-    return fmtDate(first) + ' – ' + fmtDate(last) + '　共 ' + ds.length + ' 场';
+    return fmtDate(ds[0]) + ' – ' + fmtDate(ds[ds.length-1]) + '　共 ' + ds.length + ' 场';
   }
   function match(e){
     if (venueFilter === 'stadium' && e.venue !== '深圳大运中心体育场') return false;
     if (venueFilter === 'gym' && e.venue !== '深圳大运中心体育馆') return false;
     if (!query) return true;
-    var hay = [e.name, e.venue, e.venue_raw, e.organiser, e.price, (e.dates||[]).join(' ')]
-      .join(' ').toLowerCase();
+    var hay = [e.name, e.venue, e.venue_raw, e.organiser, e.price, e.note,
+               (e.dates||[]).join(' ')].join(' ').toLowerCase();
     return hay.indexOf(query.toLowerCase()) !== -1;
   }
   function card(e){
@@ -233,9 +461,11 @@
     var tags = venueTag(e.venue);
     if (e.is_new) tags += '<span class="tag is-new">新</span>';
     tags += statusTag(e);
+    if (e._manual) tags += '<span class="tag is-manual">本地补录</span>';
     var src = (e.sources && e.sources[0]) ? e.sources[0].name : (e.source || '');
-    if (src) tags += '<span class="tag src">' + esc(src) + '</span>';
-    (e.sources || []).slice(1).forEach(function(s){
+    if (src && !e._manual) tags += '<span class="tag src">' + esc(src) + '</span>';
+    (e.sources || []).slice(e._manual ? 1 : 0).forEach(function(s){
+      if (!e._manual && s === e.sources[0]) return;
       tags += '<span class="tag src">' + esc(s.name) + '</span>';
     });
 
@@ -244,17 +474,28 @@
     if (e.price) facts += '<span><b>票价</b>' + esc(e.price) + '</span>';
     if (e.on_sale) facts += '<span><b>开票</b>' + esc(e.on_sale) + '</span>';
     if (e.organiser) facts += '<span><b>举办</b>' + esc(e.organiser) + '</span>';
+    if (e.note) facts += '<span><b>备注</b>' + esc(e.note) + '</span>';
 
     var foot = '';
-    if (e.source_url) foot += '<a href="' + esc(e.source_url) + '" target="_blank" rel="noopener">查看公告原文 →</a>';
+    if (e.source_url) foot += '<a href="' + esc(e.source_url) + '" target="_blank" rel="noopener">查看原文 →</a>';
     if (e.venue_raw && e.venue_raw !== e.venue) foot += '<span class="dim">场所原文：' + esc(e.venue_raw) + '</span>';
+    if (e._manual) foot += '<a href="#" class="del" data-k="' + esc(e._key) + '">删除这条补录</a>';
 
-    return '<div class="card"><div class="card-top">' + dateBox +
+    return '<div class="card' + (e._manual ? ' is-manual' : '') + '"><div class="card-top">' + dateBox +
       '<div class="card-main"><div class="name">' + esc(e.name) + '</div>' +
       '<div class="tags">' + tags + '</div>' +
       '<div class="facts">' + facts + '</div>' +
       (foot ? '<div class="card-foot">' + foot + '</div>' : '') +
       '</div></div></div>';
+  }
+
+  function rebuild(){
+    var base = BASE || { events: [] };
+    var evs = (base.events || []).slice();
+    readManual().forEach(function(m){ evs.push(manualToEvent(m)); });
+    DATA = {};
+    for (var k in base) if (Object.prototype.hasOwnProperty.call(base, k)) DATA[k] = base[k];
+    DATA.events = evs;
   }
 
   function render(){
@@ -273,7 +514,7 @@
       state.hidden = false;
       state.innerHTML = all.length
         ? '<strong>没有匹配的演出</strong>试试换个关键词或筛选条件'
-        : '<strong>暂无收录的演出</strong>数据更新后会自动出现';
+        : '<strong>暂无收录的演出</strong>数据更新后会自动出现，也可以点「人工录入」先记一条';
       return;
     }
     state.hidden = true;
@@ -287,6 +528,162 @@
     list.innerHTML = html;
   }
 
+  function setBase(data, silent){
+    BASE = data || { events: [] };
+    document.getElementById('updated').textContent = BASE.updated_date || '—';
+    rebuild();
+    document.getElementById('total').textContent = (DATA.events || []).length;
+    if (BASE.new_count){
+      document.getElementById('newline').hidden = false;
+      document.getElementById('newcount').textContent = BASE.new_count;
+    }
+    updateLocalNote();
+    render();
+    if (!silent) updateLocalNote();
+  }
+  function updateLocalNote(){
+    var n = readManual().length;
+    document.getElementById('localNote').textContent = n ? '本机补录 ' + n + ' 条' : '';
+  }
+
+  // ------------------------------------------------------ 同步远端数据
+  function syncRemote(silent){
+    var btn = document.getElementById('syncBtn');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    var label = btn.textContent;
+    btn.textContent = '同步中…';
+
+    function done(data){
+      btn.disabled = false;
+      btn.textContent = label;
+      if (!data){
+        if (silent) return;
+        toast('没能连上数据源，当前显示的是本机数据', 'err');
+        return;
+      }
+      var cur = (BASE && BASE.updated_at) || '';
+      if (data.updated_at && data.updated_at <= cur){
+        if (!silent) toast('已经是最新（' + (data.updated_date || '—') + '）');
+        return;
+      }
+      writeLS(LS_REMOTE, data);
+      setBase(data);
+      toast('已同步到 ' + (data.updated_date || '—') + '，收录 ' + ((data.events||[]).length) + ' 场');
+    }
+
+    (function attempt(i){
+      if (i >= REMOTE_URLS.length){ done(null); return; }
+      var url = REMOTE_URLS[i] + '?t=' + Date.now();
+      var timer = setTimeout(function(){ attempt(i + 1); }, 8000);
+      fetch(url, { cache: 'no-store' }).then(function(r){
+        clearTimeout(timer);
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function(j){
+        if (!j || !Array.isArray(j.events)) throw new Error('bad payload');
+        done(j);
+      }).catch(function(){
+        clearTimeout(timer);
+        attempt(i + 1);
+      });
+    })(0);
+  }
+
+  // ------------------------------------------------------------ 录入
+  var mask = document.getElementById('mask');
+  function openForm(){
+    ['fName','fDates','fPrice','fOnsale','fOrg','fUrl','fNote'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('fVenue').value = 'gym';
+    document.getElementById('formErr').textContent = '';
+    mask.hidden = false;
+    setTimeout(function(){ document.getElementById('fName').focus(); }, 30);
+  }
+  function closeForm(){ mask.hidden = true; }
+
+  function saveForm(){
+    var name = document.getElementById('fName').value.trim();
+    var dates = parseDateInput(document.getElementById('fDates').value);
+    var err = document.getElementById('formErr');
+    if (!name){ err.textContent = '请填写演出名称'; document.getElementById('fName').focus(); return; }
+    if (!dates.length){ err.textContent = '请至少填一个有效日期，例如 2026-12-11'; document.getElementById('fDates').focus(); return; }
+
+    var row = {
+      _key: newKey(),
+      name: name,
+      venue: document.getElementById('fVenue').value,
+      dates: dates,
+      price: document.getElementById('fPrice').value.trim(),
+      on_sale: document.getElementById('fOnsale').value.trim(),
+      organiser: document.getElementById('fOrg').value.trim(),
+      url: document.getElementById('fUrl').value.trim(),
+      note: document.getElementById('fNote').value.trim(),
+      added: new Date().toISOString().slice(0,10)
+    };
+
+    var dup = findDup(row);
+    if (dup && !confirm('官方数据里已经有一场「' + dup.name + '」（' +
+        ((dup.dates||[]).join('、') || '日期待定') + '）。\n看起来是同一场，确定还要单独记一条吗？')){
+      return;
+    }
+
+    var rows = readManual();
+    rows.push(row);
+    if (!saveManual(rows)) return;
+    closeForm();
+    setBase(BASE, true);
+    toast('已保存：' + name);
+  }
+
+  function exportManual(){
+    var rows = readManual();
+    if (!rows.length){ toast('本机还没有补录记录', 'err'); return; }
+    var out = rows.map(function(m){
+      return {
+        name: m.name, venue: m.venue || '', dates: m.dates || [],
+        price: m.price || '', on_sale: m.on_sale || '', organiser: m.organiser || '',
+        url: m.url || '', note: m.note || ''
+      };
+    });
+    var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'dayun-manual-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast('已导出 ' + out.length + ' 条，把文件交给维护者合并进 data/manual.json');
+  }
+
+  function importManual(file){
+    var fr = new FileReader();
+    fr.onload = function(){
+      var rows;
+      try { rows = JSON.parse(fr.result); } catch (e){ toast('文件不是合法的 JSON', 'err'); return; }
+      if (!Array.isArray(rows)){ toast('文件内容应该是补录数组', 'err'); return; }
+      var cur = readManual();
+      var exist = {};
+      cur.forEach(function(m){ exist[(m.name||'') + '|' + (m.dates||[]).join(',')] = 1; });
+      var added = 0;
+      rows.forEach(function(r){
+        if (!r || !r.name) return;
+        var key = (r.name||'') + '|' + ((r.dates||[]).join(','));
+        if (exist[key]) return;
+        exist[key] = 1;
+        r._key = r._key || newKey();
+        cur.push(r);
+        added++;
+      });
+      if (!added){ toast('没有新的补录记录'); return; }
+      if (!saveManual(cur)) return;
+      setBase(BASE, true);
+      toast('已导入 ' + added + ' 条补录');
+    };
+    fr.readAsText(file);
+  }
+
+  // ------------------------------------------------------------ 事件
   document.getElementById('venueSeg').addEventListener('click', function(ev){
     var b = ev.target.closest('button'); if (!b) return;
     Array.prototype.forEach.call(this.querySelectorAll('button'), function(x){ x.classList.remove('on'); });
@@ -300,27 +697,68 @@
     timer = setTimeout(function(){ query = v; render(); }, 120);
   });
 
-  function boot(data){
-    DATA = data || { events: [] };
-    document.getElementById('updated').textContent = DATA.updated_date || '—';
-    document.getElementById('total').textContent = DATA.count != null ? DATA.count : (DATA.events||[]).length;
-    if (DATA.new_count){ document.getElementById('newline').hidden = false;
-      document.getElementById('newcount').textContent = DATA.new_count; }
-    render();
+  document.getElementById('syncBtn').addEventListener('click', function(){ syncRemote(false); });
+  document.getElementById('addBtn').addEventListener('click', openForm);
+  document.getElementById('exportBtn').addEventListener('click', exportManual);
+  document.getElementById('importBtn').addEventListener('click', function(){
+    document.getElementById('fileInput').click();
+  });
+  document.getElementById('fileInput').addEventListener('change', function(){
+    if (this.files && this.files[0]) importManual(this.files[0]);
+    this.value = '';
+  });
+
+  document.getElementById('cancelBtn').addEventListener('click', closeForm);
+  document.getElementById('saveBtn').addEventListener('click', saveForm);
+  mask.addEventListener('click', function(ev){ if (ev.target === mask) closeForm(); });
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && !mask.hidden) closeForm();
+  });
+  document.getElementById('fName').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter'){ ev.preventDefault(); document.getElementById('fDates').focus(); }
+  });
+  document.getElementById('fDates').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter'){ ev.preventDefault(); saveForm(); }
+  });
+
+  document.getElementById('list').addEventListener('click', function(ev){
+    var a = ev.target.closest('a.del'); if (!a) return;
+    ev.preventDefault();
+    var key = a.dataset.k;
+    var rows = readManual();
+    var target = rows.filter(function(m){ return m._key === key; })[0];
+    if (!target) return;
+    if (!confirm('删除补录「' + target.name + '」？')) return;
+    saveManual(rows.filter(function(m){ return m._key !== key; }));
+    setBase(BASE, true);
+    toast('已删除');
+  });
+
+  // ------------------------------------------------------------ 启动
+  // 单文件版（大运中心演出日历.html）把数据内联成 window.__DATA__，双击打开也能用；
+  // 部署在服务器时走 fetch。两种情况都会再去远端核对一遍是否有更新。
+  if (window.__DATA__) {
+    setBase(window.__DATA__);
+  } else {
+    var cached = readLS(LS_REMOTE, null);
+    if (cached && cached.events){ setBase(cached); }
   }
 
-  // 单文件版（大运中心演出日历.html）会把数据内联成 window.__DATA__，
-  // 这样双击打开也能用；部署到服务器时才走 fetch。
-  if (window.__DATA__) { boot(window.__DATA__); return; }
-
-  fetch('./events.json?t=' + Date.now())
+  var localFetch = fetch('./events.json?t=' + Date.now())
     .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(boot)
+    .then(function(j){
+      if (!j || !Array.isArray(j.events)) throw new Error('bad payload');
+      var cur = (BASE && BASE.updated_at) || '';
+      if (!cur || (j.updated_at && j.updated_at > cur)){ writeLS(LS_REMOTE, j); setBase(j); }
+    })
     .catch(function(err){
+      if (BASE) return;               // 已有内联/缓存数据，静默继续
       var s = document.getElementById('state');
       s.innerHTML = '<strong>没能读取到数据文件</strong>' +
-        '请确认 events.json 和本页面在同一个目录下。（' + esc(err.message) + '）';
+        '请确认 events.json 和本页面在同一个目录下，或点上面的「同步最新数据」。（' + esc(err.message) + '）';
     });
+
+  localFetch.then(function(){ syncRemote(true); }, function(){ syncRemote(true); });
 })();
 </script>
 </body>

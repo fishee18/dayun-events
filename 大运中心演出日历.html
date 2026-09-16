@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>深圳大运中心演出日历</title>
+<meta name="description" content="深圳大运中心体育场、体育馆的演出信息汇总，来源为广东省文旅厅审批公告及公开渠道。">
+<style>
+  :root{
+    --bg:#f6f6f4; --surface:#fff; --surface-2:#fbfbf9;
+    --text:#1b1b19; --muted:#6d6d66; --faint:#9a9a92;
+    --line:#e7e5df; --line-soft:#f0eee9;
+    --stadium:#185fa5; --stadium-bg:#e8f1fb;
+    --gym:#0f6e56;     --gym-bg:#e2f3ed;
+    --new:#a32d2d;     --new-bg:#fbeaea;
+    --live:#854f0b;    --live-bg:#faeeda;
+    --manual:#5b3fa8;  --manual-bg:#f1ecfb;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font:400 15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 16px 64px}
+
+  header{padding:32px 0 20px}
+  h1{margin:0 0 8px;font-size:24px;font-weight:500;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px;margin:0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:13px;color:var(--faint)}
+  .meta b{font-weight:500;color:var(--muted)}
+
+  .panel{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:20px;
+  }
+  .panel-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px}
+  .seg button{
+    appearance:none;border:0;background:transparent;color:var(--muted);
+    font:inherit;font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer;
+  }
+  .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .seg button:hover:not(.on){color:var(--text)}
+  input[type=search]{
+    flex:1 1 200px;min-width:160px;font:inherit;font-size:14px;
+    padding:8px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--surface-2);color:var(--text);outline:none;
+  }
+  input[type=search]:focus{border-color:#c9c7c0;background:var(--surface)}
+  .count{font-size:13px;color:var(--faint);margin-left:auto;white-space:nowrap}
+
+  .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;
+    padding-top:12px;border-top:1px solid var(--line-soft)}
+  .btn{
+    appearance:none;font:inherit;font-size:13px;cursor:pointer;
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+    padding:7px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:hover{border-color:#d3d1ca;background:#fff}
+  .btn.primary{background:#1b1b19;border-color:#1b1b19;color:#fff}
+  .btn.primary:hover{background:#33332f}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.link{border-color:transparent;background:transparent;color:var(--muted);padding:7px 6px}
+  .btn.link:hover{color:var(--text);background:transparent}
+  .tools .spacer{flex:1}
+  .local-note{font-size:12.5px;color:var(--faint)}
+
+  h2.month{
+    font-size:13px;font-weight:500;color:var(--muted);
+    margin:28px 0 10px;display:flex;align-items:center;gap:10px;
+  }
+  h2.month::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;margin-bottom:10px;transition:border-color .15s;
+  }
+  .card:hover{border-color:#d8d6cf}
+  .card.is-manual{border-left:3px solid var(--manual)}
+  .card-top{display:flex;gap:12px;align-items:flex-start}
+  .date-box{
+    flex:0 0 58px;text-align:center;border-radius:9px;
+    background:var(--surface-2);border:1px solid var(--line);padding:7px 4px;
+  }
+  .date-box .d{font-size:19px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
+  .date-box .m{font-size:11px;color:var(--faint);margin-top:2px}
+  .card-main{flex:1;min-width:0}
+  .name{font-size:15px;font-weight:500;line-height:1.45;margin:0 0 8px;word-break:break-word}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .tag{
+    font-size:11.5px;padding:2.5px 8px;border-radius:5px;white-space:nowrap;
+    border:1px solid transparent;
+  }
+  .tag.venue-stadium{background:var(--stadium-bg);color:var(--stadium);border-color:#cfe2f6}
+  .tag.venue-gym{background:var(--gym-bg);color:var(--gym);border-color:#c6e6da}
+  .tag.venue-unknown{background:#f1efea;color:var(--muted);border-color:var(--line)}
+  .tag.is-new{background:var(--new-bg);color:var(--new);border-color:#f4d0d0}
+  .tag.is-live{background:var(--live-bg);color:var(--live);border-color:#f2dfb8}
+  .tag.is-manual{background:var(--manual-bg);color:var(--manual);border-color:#ddd2f5}
+  .tag.src{background:var(--surface-2);color:var(--faint);border-color:var(--line)}
+
+  .facts{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;color:var(--muted)}
+  .facts span{white-space:nowrap}
+  .facts b{font-weight:400;color:var(--faint);margin-right:4px}
+  .card-foot{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);font-size:13px;
+  }
+  .card-foot a{color:var(--stadium);text-decoration:none}
+  .card-foot a:hover{text-decoration:underline}
+  .card-foot a.del{color:var(--new)}
+  .dim{color:var(--faint);font-size:12.5px}
+
+  .state{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:48px 20px;text-align:center;color:var(--faint);font-size:14px;
+  }
+  .state strong{display:block;color:var(--muted);font-weight:500;margin-bottom:6px;font-size:15px}
+
+  .mask{
+    position:fixed;inset:0;background:rgba(26,26,24,.34);z-index:60;
+    display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow:auto;
+  }
+  .mask[hidden]{display:none}
+  .modal{
+    background:var(--surface);border-radius:14px;width:100%;max-width:460px;
+    padding:20px 20px 16px;box-shadow:0 12px 40px rgba(0,0,0,.16);margin:auto 0;
+  }
+  .modal h3{margin:0 0 6px;font-size:16px;font-weight:500}
+  .modal .hint{margin:0 0 16px;font-size:12.5px;color:var(--faint);line-height:1.7}
+  .grid2{display:flex;gap:10px}
+  .grid2>*{flex:1;min-width:0}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px}
+  .field label .req{color:var(--new)}
+  .field input,.field select,.field textarea{
+    width:100%;font:inherit;font-size:14px;padding:8px 10px;
+    border:1px solid var(--line);border-radius:8px;background:var(--surface-2);
+    color:var(--text);outline:none;
+  }
+  .field textarea{resize:vertical;min-height:56px}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:#c9c7c0;background:#fff}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+  .err{color:var(--new);font-size:12.5px;margin:0 0 10px;min-height:0}
+  .err:empty{display:none}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translate(-50%,14px);
+    background:#1b1b19;color:#fff;font-size:13.5px;padding:10px 16px;border-radius:10px;
+    box-shadow:0 6px 24px rgba(0,0,0,.2);opacity:0;pointer-events:none;
+    transition:opacity .18s,transform .18s;z-index:80;max-width:88vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.err{background:#7d2323}
+
+  footer{
+    margin-top:36px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--faint);line-height:1.8;
+  }
+  footer code{background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12px}
+  @media(max-width:560px){
+    h1{font-size:21px}
+    .date-box{flex-basis:50px}
+    .count{margin-left:0;width:100%}
+    header{padding:24px 0 16px}
+    .grid2{flex-direction:column;gap:0}
+    .tools .btn{flex:1 1 auto;justify-content:center}
+  }
+</style>
+</head>
+<body>
+<script>window.__DATA__={"updated_at":"2026-09-16 15:57:36","updated_date":"2026-09-16","since":"2026-09-01","venue":{"stadium":"深圳大运中心体育场","gymnasium":"深圳大运中心体育馆"},"count":6,"new_count":0,"sources":["gd","manual"],"events":[{"name":"G.E.M. 邓紫棋 I AM GLORIA 世界巡回演唱会 2.0 深圳站","venue":"深圳大运中心体育场","venue_raw":"深圳大运中心体育场","dates":["2026-09-11","2026-09-12","2026-09-13","2026-09-18","2026-09-19","2026-09-20","2026-09-25","2026-09-26","2026-09-27","2026-10-03","2026-10-04","2026-10-05"],"start_date":"2026-09-11","end_date":"2026-10-05","price":"380 / 580 / 780 / 1080 / 1380 / 1680","organiser":"深圳稻草华文文化传播有限公司","on_sale":"已开售","source":"人工整理","source_url":"https://www.damai.cn/","evidence":"manual/explicit","id":"5bc7500ee4ee","sources":[{"name":"广东省文旅厅审批公告","url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4908757.html"},{"name":"人工整理","url":"https://www.damai.cn/"}],"confirmed":true,"aliases":["G.E.M.邓紫棋I AM GLORIA (我是歌莉雅)巡回演唱会-深圳站"]},{"name":"马思唯-乐透人生 The Lottery TOUR 巡回演唱会-深圳站","venue":"深圳大运中心体育馆","venue_raw":"广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次1（场）","dates":["2026-09-19"],"start_date":"2026-09-19","end_date":"2026-09-19","price":"","organiser":"深圳稻草华文兴宸传播有限公司","on_sale":"已开售","source":"广东省文旅厅审批公告","source_url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html","evidence":"大运中心+体育馆","published":"2026年06月11日","date_text":"2026-09-19","id":"e26ee9f860de","sources":[{"name":"广东省文旅厅审批公告","url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html"},{"name":"人工整理","url":""}],"aliases":["马思唯 2026 巡回演唱会 深圳站"],"confirmed":true},{"name":"HENRY刘宪华2026 ENJOY THE SHOW 华丽宪场巡回演唱会-深圳站","venue":"深圳大运中心体育馆","venue_raw":"广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆","dates":["2026-09-26","2026-09-27"],"start_date":"2026-09-26","end_date":"2026-09-27","price":"","organiser":"深圳稻草华文兴宸传播有限公司","on_sale":"","source":"广东省文旅厅审批公告","source_url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4945440.html","evidence":"大运中心+体育馆","published":"2026年08月27日","date_text":"2026-09-26至2026-09-27","id":"84243869d587","sources":[{"name":"广东省文旅厅审批公告","url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4945440.html"},{"name":"人工整理","url":""}],"aliases":["HENRY 刘宪华 2026 ENJOY THE SHOW 华丽宪场巡回演唱会 深圳站"],"confirmed":true},{"name":"周华健2026“少年的奇幻之旅3.0” 巡回演唱会-深圳站","venue":"深圳大运中心体育馆","venue_raw":"广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次2（场）","dates":["2026-12-11","2026-12-12"],"start_date":"2026-12-11","end_date":"2026-12-12","price":"","organiser":"深圳稻草华文兴宸传播有限公司","on_sale":"","source":"广东省文旅厅审批公告","source_url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4908704.html","evidence":"大运中心+体育馆","published":"2026年06月11日","date_text":"2026-12-11至2026-12-12","id":"e87864c74f51","sources":[{"name":"广东省文旅厅审批公告","url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4908704.html"}],"confirmed":true},{"name":"鹭卓 Ready To The Top II 巡回演唱会 深圳站","venue":"深圳大运中心体育馆","venue_raw":"深圳大运中心体育馆","dates":["2026-12-19","2026-12-20"],"start_date":"2026-12-19","end_date":"2026-12-20","price":"","organiser":"","on_sale":"待公布","source":"人工整理","source_url":"","evidence":"manual/explicit","id":"79ee9be16337","sources":[{"name":"人工整理","url":""}],"confirmed":true},{"name":"王嘉尔 JACKSON WANG MAGICMAN 2 WORLD TOUR 2025-2027—深圳站","venue":"深圳大运中心体育馆","venue_raw":"广东省深圳龙岗区龙城街道黄阁坑社区龙翔大道3001号深圳大运中心体育馆","dates":["2027-01-30","2027-01-31"],"start_date":"2027-01-30","end_date":"2027-01-31","price":"","organiser":"上海巡途文化传媒有限公司","on_sale":"","source":"广东省文旅厅审批公告","source_url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4924064.html","evidence":"大运中心+体育馆","published":"2026年07月17日","date_text":"2027-01-30至2027-01-31","id":"abcaa1a60c64","sources":[{"name":"广东省文旅厅审批公告","url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4924064.html"}],"confirmed":true}],"recent_finished":[{"name":"2026伍佰&China Blue ROCK STAR 2 巡回演唱会-深圳站","venue":"深圳大运中心体育馆","venue_raw":"广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次2（场）","dates":["2026-09-04","2026-09-05"],"start_date":"2026-09-04","end_date":"2026-09-05","price":"","organiser":"替恩替文化（广东）有限公司","on_sale":"","source":"广东省文旅厅审批公告","source_url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4870887.html","evidence":"大运中心+体育馆","published":"2026年03月24日","date_text":"2026-09-04至2026-09-05","id":"a9e49ad495ab","sources":[{"name":"广东省文旅厅审批公告","url":"https://whly.gd.gov.cn/audit_newspjggg/content/post_4870887.html"}],"confirmed":true}]};</script>
+
+<div class="wrap">
+
+  <header>
+    <h1>深圳大运中心演出日历</h1>
+    <p class="sub">汇总体育场与体育馆的演出档期。数据来自广东省文旅厅营业性演出审批公告及公开渠道，开票信息以票务平台为准。</p>
+    <div class="meta">
+      <span>数据更新：<b id="updated">—</b></span>
+      <span>收录：<b id="total">—</b> 场</span>
+      <span id="newline" hidden>新增：<b id="newcount">0</b> 场</span>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-row">
+      <div class="seg" id="venueSeg">
+        <button data-v="all" class="on">全部</button>
+        <button data-v="stadium">体育场</button>
+        <button data-v="gym">体育馆</button>
+      </div>
+      <input type="search" id="q" placeholder="搜索演出、艺人或场馆">
+      <span class="count" id="shown"></span>
+    </div>
+    <div class="tools">
+      <button class="btn primary" id="syncBtn">⟳ 同步最新数据</button>
+      <button class="btn" id="addBtn">＋ 人工录入</button>
+      <span class="spacer"></span>
+      <button class="btn link" id="exportBtn">导出补录</button>
+      <button class="btn link" id="importBtn">导入</button>
+      <span class="local-note" id="localNote"></span>
+    </div>
+  </div>
+
+  <div id="list"></div>
+  <div id="state" class="state"><strong>正在读取数据</strong>首次加载需要几秒</div>
+
+  <footer>
+    <div>场馆：深圳大运中心体育场（龙岗区龙翔大道）· 深圳大运中心体育馆</div>
+    <div>官方数据每天自动更新，点「同步最新数据」可立即拉取；临时消息可用「人工录入」先记在本机，导出后合并进 <code>data/manual.json</code> 即可全网生效。</div>
+  </footer>
+</div>
+
+<div class="mask" id="mask" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">人工录入演出</h3>
+    <p class="hint">录入的内容保存在这台设备的浏览器里，只有你能看到。导出成文件后合并进仓库，就能同步给所有人。</p>
+    <p class="err" id="formErr"></p>
+    <div class="field">
+      <label for="fName">演出名称 <span class="req">*</span></label>
+      <input id="fName" type="text" placeholder="例如：周华健 少年的奇幻之旅 3.0 深圳站" autocomplete="off">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="fVenue">场馆 <span class="req">*</span></label>
+        <select id="fVenue">
+          <option value="gym">深圳大运中心体育馆</option>
+          <option value="stadium">深圳大运中心体育场</option>
+          <option value="">待定</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fDates">演出日期 <span class="req">*</span></label>
+        <input id="fDates" type="text" placeholder="2026-12-11, 2026-12-12" autocomplete="off">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="fPrice">票价</label>
+        <input id="fPrice" type="text" placeholder="380 / 580 / 780" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fOnsale">开票时间</label>
+        <input id="fOnsale" type="text" placeholder="待公布 / 已开售" autocomplete="off">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="fOrg">举办单位</label>
+        <input id="fOrg" type="text" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fUrl">链接</label>
+        <input id="fUrl" type="text" placeholder="购票或公告页面" autocomplete="off">
+      </div>
+    </div>
+    <div class="field">
+      <label for="fNote">备注</label>
+      <textarea id="fNote" placeholder="开演时间、注意事项等"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="cancelBtn">取消</button>
+      <button class="btn primary" id="saveBtn">保存</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="application/json,.json" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  var LS_MANUAL = 'dayun_manual_v1';
+  var LS_REMOTE = 'dayun_remote_v1';
+  var REMOTE_URLS = [
+    'https://fishee18.github.io/dayun-events/events.json',
+    'https://raw.githubusercontent.com/fishee18/dayun-events/main/data/events.json',
+    'https://cdn.jsdelivr.net/gh/fishee18/dayun-events@main/data/events.json'
+  ];
+  var VENUE_NAME = { gym:'深圳大运中心体育馆', stadium:'深圳大运中心体育场' };
+
+  var BASE = null, DATA = null, venueFilter = '', query = '';
+
+  var VENUE_LABEL = {
+    '深圳大运中心体育场': ['venue-stadium', '体育场'],
+    '深圳大运中心体育馆': ['venue-gym', '体育馆']
+  };
+
+  // ------------------------------------------------------------ 工具
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function today(){
+    var d = new Date(); d.setHours(0,0,0,0); return d;
+  }
+  function parseD(s){
+    if (!s) return null;
+    var p = String(s).split('-'); if (p.length !== 3) return null;
+    var d = new Date(+p[0], +p[1]-1, +p[2]); d.setHours(0,0,0,0); return d;
+  }
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function fmtISO(y,m,d){ return y + '-' + pad(m) + '-' + pad(d); }
+  function fmtDate(s){
+    var d = parseD(s); if (!d) return s || '';
+    return (d.getMonth()+1) + '月' + d.getDate() + '日';
+  }
+  function weekday(s){
+    var d = parseD(s); if (!d) return '';
+    return '周' + '日一二三四五六'[d.getDay()];
+  }
+  function monthKey(s){ return (s || '').slice(0,7); }
+  function monthLabel(k){
+    var p = String(k).split('-');
+    return p.length === 2 ? (+p[0]) + ' 年 ' + (+p[1]) + ' 月' : '日期待定';
+  }
+  function daysUntil(s){
+    var d = parseD(s); if (!d) return null;
+    return Math.round((d - today()) / 86400000);
+  }
+  function toast(msg, kind){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (kind === 'err' ? ' err' : '');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function(){ t.className = 'toast' + (kind === 'err' ? ' err' : ''); }, 3600);
+  }
+
+  // -------------------------------------------------- 本地存储（补录）
+  function readLS(key, fallback){
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      var v = JSON.parse(raw);
+      return v == null ? fallback : v;
+    } catch (e) { return fallback; }
+  }
+  function writeLS(key, val){
+    try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+    catch (e) { return false; }
+  }
+  function readManual(){
+    var rows = readLS(LS_MANUAL, []);
+    return Array.isArray(rows) ? rows : [];
+  }
+  function saveManual(rows){
+    if (writeLS(LS_MANUAL, rows)) return true;
+    toast('浏览器存储不可用，这次的录入没法保存', 'err');
+    return false;
+  }
+  function newKey(){
+    return 'm' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36);
+  }
+
+  // 把「2026-12-11, 12-12」这类输入解析成 YYYY-MM-DD 数组
+  function parseDateInput(text){
+    var out = [];
+    String(text || '').split(/[,，、;；\s\/]+/).forEach(function(tk){
+      tk = tk.trim(); if (!tk) return;
+      var m = tk.match(/^(\d{4})[-.年](\d{1,2})[-.月](\d{1,2})日?$/);
+      if (m){ out.push(fmtISO(+m[1], +m[2], +m[3])); return; }
+      m = tk.match(/^(\d{1,2})[-.月](\d{1,2})日?$/);
+      if (m){
+        var y = today().getFullYear();
+        var cand = new Date(y, +m[1]-1, +m[2]); cand.setHours(0,0,0,0);
+        // 已过去一个多月，说明写的是明年的日期
+        if ((today() - cand) / 86400000 > 30) y += 1;
+        out.push(fmtISO(y, +m[1], +m[2]));
+      }
+    });
+    out = out.filter(function(v,i){ return out.indexOf(v) === i; });
+    out.sort();
+    return out;
+  }
+
+  function manualToEvent(m){
+    var dates = (m.dates || []).slice().sort();
+    return {
+      id: 'manual-' + (m._key || ''),
+      name: m.name,
+      venue: VENUE_NAME[m.venue] || '',
+      venue_raw: '',
+      dates: dates,
+      start_date: dates[0] || '',
+      end_date: dates[dates.length - 1] || '',
+      price: m.price || '',
+      on_sale: m.on_sale || '',
+      organiser: m.organiser || '',
+      note: m.note || '',
+      source: '本地补录',
+      source_url: m.url || '',
+      sources: [{ name: '本地补录', url: m.url || '' }],
+      _manual: true,
+      _key: m._key
+    };
+  }
+
+  // 与官方数据撞车（同名 / 同场馆同日）时提醒，避免重复录入
+  function findDup(m){
+    var evs = (BASE && BASE.events) || [];
+    var norm = function(s){ return String(s||'').toLowerCase().replace(/[\s（）()·・\-—]/g,''); };
+    var n1 = norm(m.name), dates = m.dates || [];
+    for (var i = 0; i < evs.length; i++){
+      var e = evs[i];
+      if (norm(e.name) === n1) return e;
+      if (m.venue && e.venue === VENUE_NAME[m.venue]){
+        var hit = (e.dates || []).some(function(d){ return dates.indexOf(d) !== -1; });
+        if (hit) return e;
+      }
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------ 渲染
+  function venueTag(v){
+    var hit = VENUE_LABEL[v];
+    if (v && v.indexOf('大运中心') === 0 && !hit) hit = ['venue-unknown','大运中心'];
+    if (!hit) hit = ['venue-unknown', v || '场馆待定'];
+    return '<span class="tag ' + hit[0] + '">' + esc(hit[1]) + '</span>';
+  }
+  function statusTag(e){
+    var ds = e.dates || [];
+    var start = parseD(ds[0]), end = parseD(ds[ds.length-1] || ds[0]);
+    if (!start) return '';
+    var t = today();
+    if (end && end < t) return '';
+    if (start <= t && end && end >= t)
+      return '<span class="tag is-live">进行中</span>';
+    var n = daysUntil(ds[0]);
+    if (n === 0) return '<span class="tag is-live">今天开演</span>';
+    if (n > 0 && n <= 7) return '<span class="tag is-live">' + n + ' 天后开演</span>';
+    return '';
+  }
+  function dateSummary(e){
+    var ds = e.dates || [];
+    if (!ds.length) return '日期待定';
+    if (ds.length === 1) return fmtDate(ds[0]) + ' ' + weekday(ds[0]);
+    return fmtDate(ds[0]) + ' – ' + fmtDate(ds[ds.length-1]) + '　共 ' + ds.length + ' 场';
+  }
+  function match(e){
+    if (venueFilter === 'stadium' && e.venue !== '深圳大运中心体育场') return false;
+    if (venueFilter === 'gym' && e.venue !== '深圳大运中心体育馆') return false;
+    if (!query) return true;
+    var hay = [e.name, e.venue, e.venue_raw, e.organiser, e.price, e.note,
+               (e.dates||[]).join(' ')].join(' ').toLowerCase();
+    return hay.indexOf(query.toLowerCase()) !== -1;
+  }
+  function card(e){
+    var ds = e.dates || [];
+    var d0 = ds[0] || '';
+    var dd = parseD(d0);
+    var dateBox = dd
+      ? '<div class="date-box"><div class="d">' + (dd.getMonth()+1) + '.' + dd.getDate() + '</div><div class="m">' + weekday(d0) + '</div></div>'
+      : '<div class="date-box"><div class="d" style="font-size:13px;color:#9a9a92">待定</div></div>';
+
+    var tags = venueTag(e.venue);
+    if (e.is_new) tags += '<span class="tag is-new">新</span>';
+    tags += statusTag(e);
+    if (e._manual) tags += '<span class="tag is-manual">本地补录</span>';
+    var src = (e.sources && e.sources[0]) ? e.sources[0].name : (e.source || '');
+    if (src && !e._manual) tags += '<span class="tag src">' + esc(src) + '</span>';
+    (e.sources || []).slice(e._manual ? 1 : 0).forEach(function(s){
+      if (!e._manual && s === e.sources[0]) return;
+      tags += '<span class="tag src">' + esc(s.name) + '</span>';
+    });
+
+    var facts = '';
+    if (ds.length) facts += '<span><b>档期</b>' + esc(dateSummary(e)) + '</span>';
+    if (e.price) facts += '<span><b>票价</b>' + esc(e.price) + '</span>';
+    if (e.on_sale) facts += '<span><b>开票</b>' + esc(e.on_sale) + '</span>';
+    if (e.organiser) facts += '<span><b>举办</b>' + esc(e.organiser) + '</span>';
+    if (e.note) facts += '<span><b>备注</b>' + esc(e.note) + '</span>';
+
+    var foot = '';
+    if (e.source_url) foot += '<a href="' + esc(e.source_url) + '" target="_blank" rel="noopener">查看原文 →</a>';
+    if (e.venue_raw && e.venue_raw !== e.venue) foot += '<span class="dim">场所原文：' + esc(e.venue_raw) + '</span>';
+    if (e._manual) foot += '<a href="#" class="del" data-k="' + esc(e._key) + '">删除这条补录</a>';
+
+    return '<div class="card' + (e._manual ? ' is-manual' : '') + '"><div class="card-top">' + dateBox +
+      '<div class="card-main"><div class="name">' + esc(e.name) + '</div>' +
+      '<div class="tags">' + tags + '</div>' +
+      '<div class="facts">' + facts + '</div>' +
+      (foot ? '<div class="card-foot">' + foot + '</div>' : '') +
+      '</div></div></div>';
+  }
+
+  function rebuild(){
+    var base = BASE || { events: [] };
+    var evs = (base.events || []).slice();
+    readManual().forEach(function(m){ evs.push(manualToEvent(m)); });
+    DATA = {};
+    for (var k in base) if (Object.prototype.hasOwnProperty.call(base, k)) DATA[k] = base[k];
+    DATA.events = evs;
+  }
+
+  function render(){
+    var list = document.getElementById('list');
+    var state = document.getElementById('state');
+    if (!DATA) return;
+    var all = (DATA.events || []).slice();
+    var rows = all.filter(match)
+      .sort(function(a,b){ return (a.start_date||'9999').localeCompare(b.start_date||'9999'); });
+
+    document.getElementById('shown').textContent =
+      rows.length === all.length ? '共 ' + all.length + ' 场' : rows.length + ' / ' + all.length + ' 场';
+
+    if (!rows.length){
+      list.innerHTML = '';
+      state.hidden = false;
+      state.innerHTML = all.length
+        ? '<strong>没有匹配的演出</strong>试试换个关键词或筛选条件'
+        : '<strong>暂无收录的演出</strong>数据更新后会自动出现，也可以点「人工录入」先记一条';
+      return;
+    }
+    state.hidden = true;
+
+    var html = '', curMonth = '';
+    rows.forEach(function(e){
+      var k = monthKey(e.start_date) || 'unknown';
+      if (k !== curMonth){ curMonth = k; html += '<h2 class="month">' + esc(monthLabel(k)) + '</h2>'; }
+      html += card(e);
+    });
+    list.innerHTML = html;
+  }
+
+  function setBase(data, silent){
+    BASE = data || { events: [] };
+    document.getElementById('updated').textContent = BASE.updated_date || '—';
+    rebuild();
+    document.getElementById('total').textContent = (DATA.events || []).length;
+    if (BASE.new_count){
+      document.getElementById('newline').hidden = false;
+      document.getElementById('newcount').textContent = BASE.new_count;
+    }
+    updateLocalNote();
+    render();
+    if (!silent) updateLocalNote();
+  }
+  function updateLocalNote(){
+    var n = readManual().length;
+    document.getElementById('localNote').textContent = n ? '本机补录 ' + n + ' 条' : '';
+  }
+
+  // ------------------------------------------------------ 同步远端数据
+  function syncRemote(silent){
+    var btn = document.getElementById('syncBtn');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    var label = btn.textContent;
+    btn.textContent = '同步中…';
+
+    function done(data){
+      btn.disabled = false;
+      btn.textContent = label;
+      if (!data){
+        if (silent) return;
+        toast('没能连上数据源，当前显示的是本机数据', 'err');
+        return;
+      }
+      var cur = (BASE && BASE.updated_at) || '';
+      if (data.updated_at && data.updated_at <= cur){
+        if (!silent) toast('已经是最新（' + (data.updated_date || '—') + '）');
+        return;
+      }
+      writeLS(LS_REMOTE, data);
+      setBase(data);
+      toast('已同步到 ' + (data.updated_date || '—') + '，收录 ' + ((data.events||[]).length) + ' 场');
+    }
+
+    (function attempt(i){
+      if (i >= REMOTE_URLS.length){ done(null); return; }
+      var url = REMOTE_URLS[i] + '?t=' + Date.now();
+      var timer = setTimeout(function(){ attempt(i + 1); }, 8000);
+      fetch(url, { cache: 'no-store' }).then(function(r){
+        clearTimeout(timer);
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      }).then(function(j){
+        if (!j || !Array.isArray(j.events)) throw new Error('bad payload');
+        done(j);
+      }).catch(function(){
+        clearTimeout(timer);
+        attempt(i + 1);
+      });
+    })(0);
+  }
+
+  // ------------------------------------------------------------ 录入
+  var mask = document.getElementById('mask');
+  function openForm(){
+    ['fName','fDates','fPrice','fOnsale','fOrg','fUrl','fNote'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('fVenue').value = 'gym';
+    document.getElementById('formErr').textContent = '';
+    mask.hidden = false;
+    setTimeout(function(){ document.getElementById('fName').focus(); }, 30);
+  }
+  function closeForm(){ mask.hidden = true; }
+
+  function saveForm(){
+    var name = document.getElementById('fName').value.trim();
+    var dates = parseDateInput(document.getElementById('fDates').value);
+    var err = document.getElementById('formErr');
+    if (!name){ err.textContent = '请填写演出名称'; document.getElementById('fName').focus(); return; }
+    if (!dates.length){ err.textContent = '请至少填一个有效日期，例如 2026-12-11'; document.getElementById('fDates').focus(); return; }
+
+    var row = {
+      _key: newKey(),
+      name: name,
+      venue: document.getElementById('fVenue').value,
+      dates: dates,
+      price: document.getElementById('fPrice').value.trim(),
+      on_sale: document.getElementById('fOnsale').value.trim(),
+      organiser: document.getElementById('fOrg').value.trim(),
+      url: document.getElementById('fUrl').value.trim(),
+      note: document.getElementById('fNote').value.trim(),
+      added: new Date().toISOString().slice(0,10)
+    };
+
+    var dup = findDup(row);
+    if (dup && !confirm('官方数据里已经有一场「' + dup.name + '」（' +
+        ((dup.dates||[]).join('、') || '日期待定') + '）。\n看起来是同一场，确定还要单独记一条吗？')){
+      return;
+    }
+
+    var rows = readManual();
+    rows.push(row);
+    if (!saveManual(rows)) return;
+    closeForm();
+    setBase(BASE, true);
+    toast('已保存：' + name);
+  }
+
+  function exportManual(){
+    var rows = readManual();
+    if (!rows.length){ toast('本机还没有补录记录', 'err'); return; }
+    var out = rows.map(function(m){
+      return {
+        name: m.name, venue: m.venue || '', dates: m.dates || [],
+        price: m.price || '', on_sale: m.on_sale || '', organiser: m.organiser || '',
+        url: m.url || '', note: m.note || ''
+      };
+    });
+    var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'dayun-manual-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast('已导出 ' + out.length + ' 条，把文件交给维护者合并进 data/manual.json');
+  }
+
+  function importManual(file){
+    var fr = new FileReader();
+    fr.onload = function(){
+      var rows;
+      try { rows = JSON.parse(fr.result); } catch (e){ toast('文件不是合法的 JSON', 'err'); return; }
+      if (!Array.isArray(rows)){ toast('文件内容应该是补录数组', 'err'); return; }
+      var cur = readManual();
+      var exist = {};
+      cur.forEach(function(m){ exist[(m.name||'') + '|' + (m.dates||[]).join(',')] = 1; });
+      var added = 0;
+      rows.forEach(function(r){
+        if (!r || !r.name) return;
+        var key = (r.name||'') + '|' + ((r.dates||[]).join(','));
+        if (exist[key]) return;
+        exist[key] = 1;
+        r._key = r._key || newKey();
+        cur.push(r);
+        added++;
+      });
+      if (!added){ toast('没有新的补录记录'); return; }
+      if (!saveManual(cur)) return;
+      setBase(BASE, true);
+      toast('已导入 ' + added + ' 条补录');
+    };
+    fr.readAsText(file);
+  }
+
+  // ------------------------------------------------------------ 事件
+  document.getElementById('venueSeg').addEventListener('click', function(ev){
+    var b = ev.target.closest('button'); if (!b) return;
+    Array.prototype.forEach.call(this.querySelectorAll('button'), function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+    venueFilter = b.dataset.v; render();
+  });
+  var timer = null;
+  document.getElementById('q').addEventListener('input', function(){
+    var v = this.value.trim();
+    clearTimeout(timer);
+    timer = setTimeout(function(){ query = v; render(); }, 120);
+  });
+
+  document.getElementById('syncBtn').addEventListener('click', function(){ syncRemote(false); });
+  document.getElementById('addBtn').addEventListener('click', openForm);
+  document.getElementById('exportBtn').addEventListener('click', exportManual);
+  document.getElementById('importBtn').addEventListener('click', function(){
+    document.getElementById('fileInput').click();
+  });
+  document.getElementById('fileInput').addEventListener('change', function(){
+    if (this.files && this.files[0]) importManual(this.files[0]);
+    this.value = '';
+  });
+
+  document.getElementById('cancelBtn').addEventListener('click', closeForm);
+  document.getElementById('saveBtn').addEventListener('click', saveForm);
+  mask.addEventListener('click', function(ev){ if (ev.target === mask) closeForm(); });
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && !mask.hidden) closeForm();
+  });
+  document.getElementById('fName').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter'){ ev.preventDefault(); document.getElementById('fDates').focus(); }
+  });
+  document.getElementById('fDates').addEventListener('keydown', function(ev){
+    if (ev.key === 'Enter'){ ev.preventDefault(); saveForm(); }
+  });
+
+  document.getElementById('list').addEventListener('click', function(ev){
+    var a = ev.target.closest('a.del'); if (!a) return;
+    ev.preventDefault();
+    var key = a.dataset.k;
+    var rows = readManual();
+    var target = rows.filter(function(m){ return m._key === key; })[0];
+    if (!target) return;
+    if (!confirm('删除补录「' + target.name + '」？')) return;
+    saveManual(rows.filter(function(m){ return m._key !== key; }));
+    setBase(BASE, true);
+    toast('已删除');
+  });
+
+  // ------------------------------------------------------------ 启动
+  // 单文件版（大运中心演出日历.html）把数据内联成 window.__DATA__，双击打开也能用；
+  // 部署在服务器时走 fetch。两种情况都会再去远端核对一遍是否有更新。
+  if (window.__DATA__) {
+    setBase(window.__DATA__);
+  } else {
+    var cached = readLS(LS_REMOTE, null);
+    if (cached && cached.events){ setBase(cached); }
+  }
+
+  var localFetch = fetch('./events.json?t=' + Date.now())
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function(j){
+      if (!j || !Array.isArray(j.events)) throw new Error('bad payload');
+      var cur = (BASE && BASE.updated_at) || '';
+      if (!cur || (j.updated_at && j.updated_at > cur)){ writeLS(LS_REMOTE, j); setBase(j); }
+    })
+    .catch(function(err){
+      if (BASE) return;               // 已有内联/缓存数据，静默继续
+      var s = document.getElementById('state');
+      s.innerHTML = '<strong>没能读取到数据文件</strong>' +
+        '请确认 events.json 和本页面在同一个目录下，或点上面的「同步最新数据」。（' + esc(err.message) + '）';
+    });
+
+  localFetch.then(function(){ syncRemote(true); }, function(){ syncRemote(true); });
+})();
+</script>
+</body>
+</html>
