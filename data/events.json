@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-09-16 08:08:42",
+  "updated_at": "2026-09-16 18:45:09",
   "updated_date": "2026-09-16",
   "since": "2026-09-01",
   "venue": {
     "stadium": "深圳大运中心体育场",
     "gymnasium": "深圳大运中心体育馆"
   },
-  "count": 6,
-  "new_count": 0,
+  "count": 7,
+  "new_count": 1,
   "sources": [
     "gd",
     "manual"
@@ -119,6 +119,32 @@
       ],
       "aliases": [
         "HENRY 刘宪华 2026 ENJOY THE SHOW 华丽宪场巡回演唱会 深圳站"
+      ],
+      "confirmed": true
+    },
+    {
+      "name": "张杰 1982 开往「未·LIVE」巡回演唱会 深圳站",
+      "venue": "深圳大运中心体育场",
+      "venue_raw": "深圳大运中心体育场",
+      "dates": [
+        "2026-10-16",
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "start_date": "2026-10-16",
+      "end_date": "2026-10-18",
+      "price": "",
+      "organiser": "",
+      "on_sale": "待公布",
+      "source": "人工整理",
+      "source_url": "",
+      "evidence": "manual/explicit",
+      "id": "cb3bc8fc94bd",
+      "sources": [
+        {
+          "name": "人工整理",
+          "url": ""
+        }
       ],
       "confirmed": true
     },
