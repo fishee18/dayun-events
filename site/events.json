@@ -1,12 +1,12 @@
 {
-  "updated_at": "2026-09-19 01:08:38",
-  "updated_date": "2026-09-19",
+  "updated_at": "2026-09-20 01:08:55",
+  "updated_date": "2026-09-20",
   "since": "2026-09-01",
   "venue": {
     "stadium": "深圳大运中心体育场",
     "gymnasium": "深圳大运中心体育馆"
   },
-  "count": 7,
+  "count": 6,
   "new_count": 0,
   "sources": [
     "gd",
@@ -54,39 +54,6 @@
       "aliases": [
         "G.E.M.邓紫棋I AM GLORIA (我是歌莉雅)巡回演唱会-深圳站"
       ]
-    },
-    {
-      "name": "马思唯-乐透人生 The Lottery TOUR 巡回演唱会-深圳站",
-      "venue": "深圳大运中心体育馆",
-      "venue_raw": "广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次1（场）",
-      "dates": [
-        "2026-09-19"
-      ],
-      "start_date": "2026-09-19",
-      "end_date": "2026-09-19",
-      "price": "",
-      "organiser": "深圳稻草华文兴宸传播有限公司",
-      "on_sale": "已开售",
-      "source": "广东省文旅厅审批公告",
-      "source_url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html",
-      "evidence": "大运中心+体育馆",
-      "published": "2026年06月11日",
-      "date_text": "2026-09-19",
-      "id": "e26ee9f860de",
-      "sources": [
-        {
-          "name": "广东省文旅厅审批公告",
-          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html"
-        },
-        {
-          "name": "人工整理",
-          "url": ""
-        }
-      ],
-      "aliases": [
-        "马思唯 2026 巡回演唱会 深圳站"
-      ],
-      "confirmed": true
     },
     {
       "name": "HENRY刘宪华2026 ENJOY THE SHOW 华丽宪场巡回演唱会-深圳站",
@@ -253,6 +220,39 @@
           "name": "广东省文旅厅审批公告",
           "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4870887.html"
         }
+      ],
+      "confirmed": true
+    },
+    {
+      "name": "马思唯-乐透人生 The Lottery TOUR 巡回演唱会-深圳站",
+      "venue": "深圳大运中心体育馆",
+      "venue_raw": "广东省深圳龙岗区龙翔大道3001号深圳大运中心体育馆演出场次1（场）",
+      "dates": [
+        "2026-09-19"
+      ],
+      "start_date": "2026-09-19",
+      "end_date": "2026-09-19",
+      "price": "",
+      "organiser": "深圳稻草华文兴宸传播有限公司",
+      "on_sale": "已开售",
+      "source": "广东省文旅厅审批公告",
+      "source_url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html",
+      "evidence": "大运中心+体育馆",
+      "published": "2026年06月11日",
+      "date_text": "2026-09-19",
+      "id": "e26ee9f860de",
+      "sources": [
+        {
+          "name": "广东省文旅厅审批公告",
+          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908627.html"
+        },
+        {
+          "name": "人工整理",
+          "url": ""
+        }
+      ],
+      "aliases": [
+        "马思唯 2026 巡回演唱会 深圳站"
       ],
       "confirmed": true
     }
