@@ -1,13 +1,13 @@
 {
-  "updated_at": "2026-09-30 01:15:43",
-  "updated_date": "2026-09-30",
+  "updated_at": "2026-10-01 01:12:07",
+  "updated_date": "2026-10-01",
   "since": "2026-09-01",
   "venue": {
     "stadium": "深圳大运中心体育场",
     "gymnasium": "深圳大运中心体育馆"
   },
   "count": 5,
-  "new_count": 1,
+  "new_count": 0,
   "sources": [
     "gd",
     "manual"
