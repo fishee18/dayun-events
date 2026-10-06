@@ -1,60 +1,18 @@
 {
-  "updated_at": "2026-10-05 01:11:40",
-  "updated_date": "2026-10-05",
+  "updated_at": "2026-10-06 01:11:16",
+  "updated_date": "2026-10-06",
   "since": "2026-09-01",
   "venue": {
     "stadium": "深圳大运中心体育场",
     "gymnasium": "深圳大运中心体育馆"
   },
-  "count": 5,
+  "count": 4,
   "new_count": 0,
   "sources": [
     "gd",
     "manual"
   ],
   "events": [
-    {
-      "name": "G.E.M. 邓紫棋 I AM GLORIA 世界巡回演唱会 2.0 深圳站",
-      "venue": "深圳大运中心体育场",
-      "venue_raw": "深圳大运中心体育场",
-      "dates": [
-        "2026-09-11",
-        "2026-09-12",
-        "2026-09-13",
-        "2026-09-18",
-        "2026-09-19",
-        "2026-09-20",
-        "2026-09-25",
-        "2026-09-26",
-        "2026-09-27",
-        "2026-10-03",
-        "2026-10-04",
-        "2026-10-05"
-      ],
-      "start_date": "2026-09-11",
-      "end_date": "2026-10-05",
-      "price": "380 / 580 / 780 / 1080 / 1380 / 1680",
-      "organiser": "深圳稻草华文文化传播有限公司",
-      "on_sale": "已开售",
-      "source": "人工整理",
-      "source_url": "https://www.damai.cn/",
-      "evidence": "manual/explicit",
-      "id": "5bc7500ee4ee",
-      "sources": [
-        {
-          "name": "广东省文旅厅审批公告",
-          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908757.html"
-        },
-        {
-          "name": "人工整理",
-          "url": "https://www.damai.cn/"
-        }
-      ],
-      "confirmed": true,
-      "aliases": [
-        "G.E.M.邓紫棋I AM GLORIA (我是歌莉雅)巡回演唱会-深圳站"
-      ]
-    },
     {
       "name": "张杰1982开往「未·LIVE」巡回演唱会-深圳站",
       "venue": "深圳大运中心体育场",
@@ -206,6 +164,48 @@
         }
       ],
       "confirmed": true
+    },
+    {
+      "name": "G.E.M. 邓紫棋 I AM GLORIA 世界巡回演唱会 2.0 深圳站",
+      "venue": "深圳大运中心体育场",
+      "venue_raw": "深圳大运中心体育场",
+      "dates": [
+        "2026-09-11",
+        "2026-09-12",
+        "2026-09-13",
+        "2026-09-18",
+        "2026-09-19",
+        "2026-09-20",
+        "2026-09-25",
+        "2026-09-26",
+        "2026-09-27",
+        "2026-10-03",
+        "2026-10-04",
+        "2026-10-05"
+      ],
+      "start_date": "2026-09-11",
+      "end_date": "2026-10-05",
+      "price": "380 / 580 / 780 / 1080 / 1380 / 1680",
+      "organiser": "深圳稻草华文文化传播有限公司",
+      "on_sale": "已开售",
+      "source": "人工整理",
+      "source_url": "https://www.damai.cn/",
+      "evidence": "manual/explicit",
+      "id": "5bc7500ee4ee",
+      "sources": [
+        {
+          "name": "广东省文旅厅审批公告",
+          "url": "https://whly.gd.gov.cn/audit_newspjggg/content/post_4908757.html"
+        },
+        {
+          "name": "人工整理",
+          "url": "https://www.damai.cn/"
+        }
+      ],
+      "confirmed": true,
+      "aliases": [
+        "G.E.M.邓紫棋I AM GLORIA (我是歌莉雅)巡回演唱会-深圳站"
+      ]
     },
     {
       "name": "马思唯-乐透人生 The Lottery TOUR 巡回演唱会-深圳站",
